@@ -980,7 +980,7 @@ function handleIncomingMessage(packet) {
     if (packet.type === 'TRAIN_UPDATE') {
         processTrainSignal(packet);
     } else if (packet.type === 'TRAIN_SHUTDOWN') {
-        processTrainShutdown(packet.lineId);
+        processTrainShutdown(packet);
     }
 }
 
