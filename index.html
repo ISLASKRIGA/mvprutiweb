@@ -117,6 +117,35 @@
                 </button>
             </div>
             
+            <!-- ===== CONSENTIMIENTO DE DATOS ANÓNIMOS ===== -->
+            <div class="privacy-consent-wrapper">
+                <label class="privacy-toggle-label" for="toggle-analytics">
+                    <div class="privacy-toggle-content">
+                        <span class="privacy-icon">📊</span>
+                        <div class="privacy-text">
+                            <strong>Contribuye al mapa de movilidad</strong>
+                            <span>Datos anónimos de uso para mejorar servicios en tu ruta. Sin nombre ni datos personales.</span>
+                        </div>
+                    </div>
+                    <div class="toggle-switch-wrapper">
+                        <input type="checkbox" id="toggle-analytics" class="toggle-checkbox">
+                        <span class="toggle-switch"></span>
+                    </div>
+                </label>
+                <button id="btn-privacy-details" class="privacy-details-btn">📋 ¿Qué datos se recopilan?</button>
+                <div id="privacy-details-panel" class="privacy-details-panel privacy-collapsed">
+                    <ul class="privacy-data-list">
+                        <li class="data-yes">Hora y día de uso de la app</li>
+                        <li class="data-yes">Líneas del metro que consultas</li>
+                        <li class="data-yes">Duración de tu sesión</li>
+                        <li class="data-yes">Tipo de dispositivo (sin nombre ni ID único)</li>
+                        <li class="data-no">Nunca: nombre, email, CURP, teléfono ni ubicación exacta</li>
+                    </ul>
+                    <p class="privacy-detail-note">Datos usados únicamente de forma <strong>agregada y anónima</strong> para analítica de movilidad urbana. Cumple con la LFPDPPP.</p>
+                    <button id="btn-clear-data" class="btn-clear-data">🗑️ Borrar mis datos locales</button>
+                </div>
+            </div>
+
             <div class="footer-note">
                 Ruti MVP &bull; Hecho para la Ciudad de México
             </div>

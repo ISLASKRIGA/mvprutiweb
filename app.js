@@ -337,6 +337,175 @@ const AppState = {
     lastBroadcastPacket: null    // Copia del último packet enviado
 };
 
+// ================= MÓDULO DE TELEMETRÍA ANÓNIMA =================
+// Recopila datos de movilidad de forma anonimizada para análisis B2B.
+// NUNCA recopila: nombre, email, teléfono, CURP ni ubicación exacta.
+// Cumple con la LFPDPPP (México). Datos sólo se activan con consentimiento explícito.
+
+const Telemetry = {
+
+    // ─── Configuración del endpoint (dejar en null para sólo guardar localmente) ───
+    // Para conectar con Supabase: 'https://TU_PROYECTO.supabase.co/rest/v1/ruti_events'
+    ENDPOINT: null,
+    API_KEY:  null,   // Supabase anon key o API key de tu backend
+
+    // ─── Estado interno ──────────────────────────────────────────────────────────
+    enabled:      false,
+    userId:       null,   // UID anónimo persistente (no vinculable a persona real)
+    sessionId:    null,   // ID de sesión por apertura de la app
+    sessionStart: null,
+    sessionLines: new Set(),   // Líneas vistas en esta sesión
+    eventQueue:   [],          // Cola de eventos pendientes de enviar
+
+    // ─── Inicialización ──────────────────────────────────────────────────────────
+    init() {
+        const consent = localStorage.getItem('ruti_consent');
+        const toggle  = document.getElementById('toggle-analytics');
+        if (consent === 'granted') {
+            if (toggle) toggle.checked = true;
+            this._activate();
+        } else if (consent === 'denied' && toggle) {
+            toggle.checked = false;
+        }
+    },
+
+    // Llamar cuando el usuario cambia el toggle
+    setConsent(granted) {
+        localStorage.setItem('ruti_consent', granted ? 'granted' : 'denied');
+        if (granted) {
+            this._activate();
+            this.track('consent_granted');
+            showTelemetryToast('📊 ¡Gracias! Tus datos ayudan a mejorar la movilidad');
+        } else {
+            this.track('consent_revoked');
+            this.enabled = false;
+            showTelemetryToast('🔒 Telemetría desactivada. No se recopilarán datos.');
+        }
+    },
+
+    _activate() {
+        this.enabled = true;
+
+        // Generar o recuperar UID anónimo persistente
+        this.userId = localStorage.getItem('ruti_uid');
+        if (!this.userId) {
+            this.userId = 'u_' + this._genId();
+            localStorage.setItem('ruti_uid', this.userId);
+        }
+
+        // Nueva sesión por cada apertura
+        this.sessionId    = 's_' + this._genId();
+        this.sessionStart = Date.now();
+        this.sessionLines.clear();
+
+        this.track('session_start', {
+            platform: this._platform(),
+            sw:       window.screen.width,
+            sh:       window.screen.height,
+            tz:       Intl.DateTimeFormat().resolvedOptions().timeZone
+        });
+    },
+
+    // ─── Registro de evento ──────────────────────────────────────────────────────
+    track(eventName, props = {}) {
+        if (!this.enabled && eventName !== 'consent_granted') return;
+
+        const ev = {
+            uid:   this.userId,
+            sid:   this.sessionId,
+            ev:    eventName,
+            ts:    Date.now(),
+            hour:  new Date().getHours(),
+            dow:   new Date().getDay(),   // 0=Dom … 6=Sáb
+            ...props
+        };
+
+        this._persist(ev);
+        this.eventQueue.push(ev);
+        if (this.ENDPOINT) this._flush();
+    },
+
+    // ─── Helpers internos ────────────────────────────────────────────────────────
+    _genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    },
+
+    _platform() {
+        const ua = navigator.userAgent;
+        if (/iPhone|iPad/.test(ua)) return 'ios';
+        if (/Android/.test(ua))     return 'android';
+        return 'desktop';
+    },
+
+    _persist(ev) {
+        try {
+            const stored = JSON.parse(localStorage.getItem('ruti_events') || '[]');
+            stored.push(ev);
+            if (stored.length > 1000) stored.splice(0, stored.length - 1000);
+            localStorage.setItem('ruti_events', JSON.stringify(stored));
+        } catch (_) { /* localStorage lleno o bloqueado */ }
+    },
+
+    _flush() {
+        if (!this.ENDPOINT || this.eventQueue.length === 0) return;
+        const batch   = this.eventQueue.splice(0);
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.API_KEY) headers['apikey'] = this.API_KEY;
+
+        fetch(this.ENDPOINT, {
+            method:    'POST',
+            headers,
+            body:      JSON.stringify(batch),
+            keepalive: true
+        }).catch(() => {
+            // Si falla, reencolar
+            this.eventQueue.unshift(...batch);
+        });
+    },
+
+    // ─── API pública de utilidad ─────────────────────────────────────────────────
+
+    // Resumen de datos guardados localmente (para mostrar transparencia al usuario)
+    getStats() {
+        try {
+            const evs      = JSON.parse(localStorage.getItem('ruti_events') || '[]');
+            const sessions = new Set(evs.map(e => e.sid)).size;
+            const lines    = [...new Set(evs.filter(e => e.line).map(e => e.line))];
+            return { total: evs.length, sessions, lines };
+        } catch (_) {
+            return { total: 0, sessions: 0, lines: [] };
+        }
+    },
+
+    // Borrar todo rastro local del usuario
+    clearAll() {
+        ['ruti_events', 'ruti_uid', 'ruti_consent'].forEach(k => localStorage.removeItem(k));
+        this.enabled      = false;
+        this.userId       = null;
+        this.sessionId    = null;
+        this.eventQueue   = [];
+        this.sessionLines.clear();
+        const toggle = document.getElementById('toggle-analytics');
+        if (toggle) toggle.checked = false;
+        showTelemetryToast('🗑️ Datos locales eliminados correctamente');
+    }
+};
+
+// Toast ligero para feedback de telemetría
+function showTelemetryToast(msg) {
+    let toast = document.getElementById('telemetry-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'telemetry-toast';
+        toast.className = 'telemetry-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('visible'), 3200);
+}
+
 // ================= CANAL DE COMUNICACIÓN EN TIEMPO REAL =================
 // Usamos BroadcastChannel para sincronizar ventanas del mismo navegador.
 // Agregamos respaldo en LocalStorage para garantizar soporte universal multiplataforma.
@@ -619,7 +788,15 @@ function drawAllMetroLines() {
 // Cambiar la visualización a una única línea del metro (Requerimiento del usuario)
 function selectMetroLine(lineId) {
     if (lineId !== 'ALL' && !METRO_LINES[lineId]) return;
-    
+
+    // 📊 Telemetría: línea seleccionada
+    Telemetry.track('line_selected', {
+        line:  lineId,
+        role:  AppState.role || 'none',
+        prev:  AppState.selectedLine
+    });
+    if (lineId !== 'ALL') Telemetry.sessionLines.add(lineId);
+
     AppState.selectedLine = lineId;
     
     // Actualizar dinámicamente las trazas de las líneas en base a conductores activos
@@ -950,7 +1127,10 @@ function renderLineChips() {
 // ================= GESTIÓN DE ROLES (FLUJOS DE BIENVENIDA) =================
 function setAppRole(role) {
     AppState.role = role;
-    
+
+    // 📊 Telemetría: rol seleccionado
+    Telemetry.track('role_selected', { role });
+
     // Ocultar ventana de bienvenida
     const selector = document.getElementById('role-selector');
     selector.classList.remove('active');
@@ -1063,6 +1243,7 @@ function requestUserLocation() {
 
 // Botón de centrado de ubicación del usuario
 document.getElementById('btn-my-location').addEventListener('click', () => {
+    Telemetry.track('location_btn_clicked', { had_gps: !!AppState.userLocation });
     if (AppState.userLocation) {
         AppState.map.setView(AppState.userLocation, 15, { animate: true, duration: 1 });
     } else {
@@ -1181,6 +1362,12 @@ function toggleTracking() {
         // ENCIENDE TRANSMISIÓN
         AppState.isTracking = true;
         btn.innerText = "Detener Transmisión";
+
+        // 📊 Telemetría: inicio de transmisión
+        Telemetry.track('transmission_started', {
+            line: AppState.driverSelectedLine,
+            mode: AppState.transmissionMode
+        });
         btn.classList.remove('btn-primary');
         btn.classList.add('btn-secondary');
         
@@ -1219,6 +1406,12 @@ function toggleTracking() {
         btn.innerText = "Comenzar Transmisión";
         btn.classList.remove('btn-secondary');
         btn.classList.add('btn-primary');
+
+        // 📊 Telemetría: fin de transmisión
+        Telemetry.track('transmission_stopped', {
+            line: AppState.driverSelectedLine,
+            mode: AppState.transmissionMode
+        });
         
         document.getElementById('select-driver-line').disabled = false;
         document.getElementById('btn-mode-simulate').disabled = false;
@@ -1692,11 +1885,55 @@ setInterval(() => {
 window.addEventListener('DOMContentLoaded', () => {
     // 1. Renderizar chips superiores y selectores
     renderLineChips();
-    
+
     // 2. Inicializar Mapa e Infraestructura del Metro
     initMap();
-    
+
     // 3. Vincular botones de rol
     document.getElementById('btn-role-passenger').addEventListener('click', () => setAppRole('passenger'));
     document.getElementById('btn-role-vehicle').addEventListener('click', () => setAppRole('vehicle'));
+
+    // 4. Inicializar módulo de telemetría (respeta consentimiento previo)
+    Telemetry.init();
+
+    // 5. Toggle de consentimiento analítico
+    const toggleAnalytics = document.getElementById('toggle-analytics');
+    if (toggleAnalytics) {
+        toggleAnalytics.addEventListener('change', (e) => {
+            Telemetry.setConsent(e.target.checked);
+        });
+    }
+
+    // 6. Panel expandible "¿Qué datos se recopilan?"
+    const btnPrivacy  = document.getElementById('btn-privacy-details');
+    const privPanel   = document.getElementById('privacy-details-panel');
+    if (btnPrivacy && privPanel) {
+        btnPrivacy.addEventListener('click', () => {
+            const collapsed = privPanel.classList.toggle('privacy-collapsed');
+            btnPrivacy.textContent = collapsed
+                ? '📋 ¿Qué datos se recopilan?'
+                : '▲ Ocultar detalles';
+        });
+    }
+
+    // 7. Botón "Borrar mis datos"
+    const btnClear = document.getElementById('btn-clear-data');
+    if (btnClear) {
+        btnClear.addEventListener('click', () => {
+            if (confirm('¿Eliminar todos los datos de telemetría guardados en este dispositivo?')) {
+                Telemetry.clearAll();
+            }
+        });
+    }
+});
+
+// 8. Evento de fin de sesión (cierre de pestaña o navegación)
+window.addEventListener('beforeunload', () => {
+    if (Telemetry.enabled && Telemetry.sessionStart) {
+        Telemetry.track('session_end', {
+            duration_s: Math.round((Date.now() - Telemetry.sessionStart) / 1000),
+            role:       AppState.role || 'none',
+            lines:      [...Telemetry.sessionLines]
+        });
+    }
 });
