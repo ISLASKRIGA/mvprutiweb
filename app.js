@@ -403,6 +403,12 @@ function updateOtherLinesBanner() {
     const listContainer = document.getElementById('other-lines-list');
     if (!banner || !listContainer) return;
     
+    // En modo ALL, el resumen global ya muestra todo. Ocultamos el banner.
+    if (AppState.selectedLine === 'ALL') {
+        banner.classList.add('hidden');
+        return;
+    }
+    
     // Buscar todas las líneas con conductores activos que no sean la seleccionada actual
     const activeLines = new Set();
     Object.values(AppState.activeVehicles).forEach(vehicle => {
@@ -566,45 +572,54 @@ function drawAllMetroLines() {
 
 // Cambiar la visualización a una única línea del metro (Requerimiento del usuario)
 function selectMetroLine(lineId) {
-    if (!METRO_LINES[lineId]) return;
+    if (lineId !== 'ALL' && !METRO_LINES[lineId]) return;
     
     AppState.selectedLine = lineId;
     
-    // 1. Mostrar únicamente la línea seleccionada con brillo premium, atenuar/ocultar las demás
-    Object.keys(METRO_LINES).forEach(id => {
-        const polylines = AppState.drawnPolylines[id];
-        if (id === lineId) {
-            // Línea activa: resplandor y grosor premium
-            polylines.glow.setStyle({ opacity: 0.45, weight: 12 });
-            polylines.main.setStyle({ opacity: 1, weight: 5 });
-            polylines.main.bringToFront();
-        } else {
-            // Ocultar por completo las demás líneas (o ponerlas hiper-transparentes)
-            polylines.glow.setStyle({ opacity: 0 });
-            polylines.main.setStyle({ opacity: 0 });
+    // Actualizar dinámicamente las trazas de las líneas en base a conductores activos
+    updateMapStyles();
+    
+    if (lineId === 'ALL') {
+        // Ocultar marcadores de estaciones para evitar saturación visual
+        clearStationMarkers();
+        
+        // Centrar en la CDMX globalmente
+        if (AppState.map) {
+            AppState.map.setView([19.4328, -99.1332], 12, {
+                animate: true,
+                duration: 1.2
+            });
         }
-    });
+    } else {
+        // Dibujar estaciones solo de la línea seleccionada
+        clearStationMarkers();
+        drawStationMarkers(lineId);
+        
+        // Enfocar el mapa en la línea seleccionada de forma suave
+        if (AppState.map) {
+            const activeLinePoly = AppState.drawnPolylines[lineId].main;
+            AppState.map.fitBounds(activeLinePoly.getBounds(), {
+                padding: [30, 30],
+                maxZoom: 14,
+                animate: true,
+                duration: 1.2
+            });
+        }
+    }
     
-    // 2. Limpiar estaciones previas y dibujar las de la línea activa
-    clearStationMarkers();
-    drawStationMarkers(lineId);
-    
-    // 3. Ajustar el zoom del mapa para encuadrar la línea completa de manera responsiva (iOS Style)
-    const activeLinePoly = AppState.drawnPolylines[lineId].main;
-    AppState.map.fitBounds(activeLinePoly.getBounds(), {
-        padding: [30, 30],
-        maxZoom: 14,
-        animate: true,
-        duration: 1.2
-    });
-    
-    // 4. Actualizar chips del DOM
+    // Actualizar chips de la barra superior
     updateActiveChipUI(lineId);
+    
+    // Si estamos en modo "Todas", poblar listado
+    if (AppState.role === 'passenger' && lineId === 'ALL') {
+        updateAllSummaryCard();
+    }
 }
 
 // Dibujar marcadores circulares para las estaciones de la línea activa
 function drawStationMarkers(lineId) {
     const line = METRO_LINES[lineId];
+    if (!line) return;
     
     line.stations.forEach((station, index) => {
         // Estilo limpio, circular y tipo Duolingo
@@ -636,14 +651,160 @@ function clearStationMarkers() {
     AppState.drawnStations = [];
 }
 
+// Actualiza de forma ultra-ligera los opacidades y visibilidad de las vías según el modo de selección
+function updateMapStyles() {
+    const lineId = AppState.selectedLine;
+    
+    // Obtener todas las líneas que tienen conductores activos actualmente
+    const activeLines = new Set();
+    Object.values(AppState.activeVehicles).forEach(v => {
+        if (v.lineId) activeLines.add(v.lineId);
+    });
+    
+    if (lineId === 'ALL') {
+        Object.keys(METRO_LINES).forEach(id => {
+            const polylines = AppState.drawnPolylines[id];
+            if (!polylines) return;
+            
+            if (activeLines.has(id)) {
+                // Línea activa: resalta sutilmente sobre el fondo
+                polylines.glow.setStyle({ opacity: 0.25, weight: 10 });
+                polylines.main.setStyle({ opacity: 0.75, weight: 5 });
+                polylines.main.bringToFront();
+            } else {
+                // Red general de fondo
+                polylines.glow.setStyle({ opacity: 0.1, weight: 6 });
+                polylines.main.setStyle({ opacity: 0.35, weight: 3.5 });
+            }
+        });
+    } else {
+        Object.keys(METRO_LINES).forEach(id => {
+            const polylines = AppState.drawnPolylines[id];
+            if (!polylines) return;
+            
+            if (id === lineId) {
+                // Línea enfocada: Brillo máximo
+                polylines.glow.setStyle({ opacity: 0.45, weight: 12 });
+                polylines.main.setStyle({ opacity: 1, weight: 5 });
+                polylines.main.bringToFront();
+            } else if (activeLines.has(id)) {
+                // Línea secundaria con conductor: Dibuja semi-transparente para evitar "flotación"
+                polylines.glow.setStyle({ opacity: 0.15, weight: 6 });
+                polylines.main.setStyle({ opacity: 0.5, weight: 3 });
+                polylines.main.bringToFront();
+            } else {
+                // Línea inactiva vacía: Se oculta para limpieza visual
+                polylines.glow.setStyle({ opacity: 0 });
+                polylines.main.setStyle({ opacity: 0 });
+            }
+        });
+    }
+}
+
+// Rellena dinámicamente el listado del panel de control de Red Completa en la Bottom Sheet
+function updateAllSummaryCard() {
+    const listContainer = document.getElementById('all-summary-trains-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '';
+    
+    // Filtrar los conductores activos reales omitiendo el conductor local
+    const activeVehiclesList = Object.entries(AppState.activeVehicles)
+        .filter(([id, v]) => id !== 'local-driver' && v.lineId)
+        .map(([id, v]) => ({ id, ...v }));
+        
+    if (activeVehiclesList.length === 0) {
+        listContainer.innerHTML = `
+            <div class="summary-empty-state">
+                <div class="empty-emoji">🛸</div>
+                <h6 class="empty-title">Buscando conductores...</h6>
+                <p class="empty-desc">No hay trenes activos en la red en este momento. ¡Abre otra pestaña como Conductor para iniciar uno!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    activeVehiclesList.forEach(vehicle => {
+        const line = METRO_LINES[vehicle.lineId];
+        if (!line) return;
+        
+        const item = document.createElement('div');
+        item.className = 'summary-train-item';
+        
+        // Badge 3D oficial de la línea
+        const badge = document.createElement('div');
+        badge.className = 'summary-train-badge';
+        badge.innerText = vehicle.lineId;
+        badge.style.backgroundColor = line.color;
+        badge.style.boxShadow = `0 3px 0 ${line.colorDark}`;
+        
+        // Info detallada
+        const info = document.createElement('div');
+        info.className = 'summary-train-info';
+        
+        const route = document.createElement('div');
+        route.className = 'summary-train-route';
+        route.innerHTML = `${vehicle.prevStation || 'Origen'} <span>➔</span> ${vehicle.nextStation || 'Terminal'}`;
+        
+        const eta = document.createElement('div');
+        eta.className = 'summary-train-eta';
+        if (vehicle.isSimulated) {
+            const remainingPercentage = 100 - (vehicle.progress || 0);
+            let secondsLeft = Math.round(remainingPercentage * 0.08);
+            eta.innerText = secondsLeft > 0 ? `Llegando en aprox. ${secondsLeft}s` : "¡Arribando ahora mismo!";
+        } else {
+            eta.innerText = "Transmisión GPS en vivo";
+        }
+        
+        info.appendChild(route);
+        info.appendChild(eta);
+        
+        // Botón "Enfocar"
+        const focusBtn = document.createElement('button');
+        focusBtn.className = 'btn-chunky btn-small btn-primary summary-focus-btn';
+        focusBtn.innerText = 'Enfocar';
+        
+        item.appendChild(badge);
+        item.appendChild(info);
+        item.appendChild(focusBtn);
+        
+        // Interacción táctil fluida: Clic en el botón o en la fila entera enfoca el tren en el mapa
+        const handleFocus = (e) => {
+            e.stopPropagation();
+            selectMetroLine(vehicle.lineId);
+            updatePassengerUIForLineChange(vehicle.lineId);
+            
+            if (vehicle.coords && AppState.map) {
+                AppState.map.setView(vehicle.coords, 15, {
+                    animate: true,
+                    duration: 1.2
+                });
+            }
+            // Centrar chip de la barra superior
+            const chip = document.querySelector(`.line-chip[data-line="${vehicle.lineId}"]`);
+            if (chip) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        };
+        
+        focusBtn.addEventListener('click', handleFocus);
+        item.addEventListener('click', handleFocus);
+        
+        listContainer.appendChild(item);
+    });
+}
+
 // Actualiza los estados de selección visual de la barra de chips superior
 function updateActiveChipUI(lineId) {
     document.querySelectorAll('.line-chip').forEach(chip => {
         const id = chip.getAttribute('data-line');
         if (id === lineId) {
             chip.classList.add('active');
-            chip.style.borderColor = METRO_LINES[lineId].color;
-            chip.style.boxShadow = `0 4px 0 ${METRO_LINES[lineId].colorDark}`;
+            if (lineId === 'ALL') {
+                chip.style.borderColor = '#58cc02';
+                chip.style.boxShadow = '0 4px 0 #46a302';
+            } else {
+                chip.style.borderColor = METRO_LINES[lineId].color;
+                chip.style.boxShadow = `0 4px 0 ${METRO_LINES[lineId].colorDark}`;
+            }
             // Centrar el chip seleccionado en la barra deslizable
             chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         } else {
@@ -662,10 +823,35 @@ function renderLineChips() {
     scrollContainer.innerHTML = '';
     selectSelect.innerHTML = '';
     
+    // 1. Si el rol es pasajero, inyectar el chip especial "Todas las Líneas" al inicio
+    if (AppState.role === 'passenger') {
+        const allChip = document.createElement('button');
+        allChip.className = 'line-chip';
+        allChip.setAttribute('data-line', 'ALL');
+        allChip.style.color = 'var(--text-dark)';
+        
+        const dot = document.createElement('span');
+        dot.className = 'chip-dot';
+        
+        const text = document.createElement('span');
+        text.innerText = 'Todas';
+        
+        allChip.appendChild(dot);
+        allChip.appendChild(text);
+        
+        allChip.addEventListener('click', () => {
+            selectMetroLine('ALL');
+            updatePassengerUIForLineChange('ALL');
+        });
+        
+        scrollContainer.appendChild(allChip);
+    }
+    
+    // 2. Cargar chips de las líneas individuales
     Object.keys(METRO_LINES).forEach(lineId => {
         const line = METRO_LINES[lineId];
         
-        // 1. Crear Chip Superior
+        // Crear Chip Superior
         const chip = document.createElement('button');
         chip.className = 'line-chip';
         chip.setAttribute('data-line', lineId);
@@ -692,7 +878,7 @@ function renderLineChips() {
         
         scrollContainer.appendChild(chip);
         
-        // 2. Crear Opción en Selector de Conductor
+        // Crear Opción en Selector de Conductor
         const option = document.createElement('option');
         option.value = lineId;
         option.innerText = line.name;
@@ -721,15 +907,20 @@ function setAppRole(role) {
         passengerPanel.classList.add('active');
         vehiclePanel.classList.remove('active');
         document.getElementById('btn-focus-train').classList.add('hidden');
+        renderLineChips(); // Re-render chips para inyectar "Todas"
+        selectMetroLine('ALL'); // Seleccionar Todas por defecto para el Pasajero
         resetPassengerView();
     } else {
         passengerPanel.classList.remove('active');
         vehiclePanel.classList.add('active');
         document.getElementById('btn-focus-train').classList.add('hidden');
+        renderLineChips(); // Re-render chips para quitar "Todas"
         
-        // Sincronizar el selector del conductor con la línea activa seleccionada en el mapa
-        document.getElementById('select-driver-line').value = AppState.selectedLine;
-        AppState.driverSelectedLine = AppState.selectedLine;
+        // Sincronizar el selector del conductor con la línea activa seleccionada en el mapa (ALL no es válido para conductor)
+        const driverLine = AppState.selectedLine === 'ALL' ? 'L1' : AppState.selectedLine;
+        document.getElementById('select-driver-line').value = driverLine;
+        AppState.driverSelectedLine = driverLine;
+        selectMetroLine(driverLine); // Si estaba en ALL, enfocar en L1
         updateDriverPanelUI();
     }
     
@@ -749,8 +940,17 @@ function resetPassengerView() {
     document.getElementById('sync-indicator').classList.add('hidden');
     document.getElementById('passenger-active-card').classList.add('hidden');
     
-    document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
-    document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${METRO_LINES[AppState.selectedLine].name}.`;
+    if (AppState.selectedLine === 'ALL') {
+        document.getElementById('passenger-all-summary-card').classList.remove('hidden');
+        updateAllSummaryCard();
+        document.getElementById('passenger-status-title').innerText = "Red del Metro CDMX";
+        document.getElementById('passenger-status-desc').innerText = "Monitoreando todas las líneas en tiempo real. Selecciona una línea arriba para ver detalles.";
+    } else {
+        document.getElementById('passenger-all-summary-card').classList.add('hidden');
+        const line = METRO_LINES[AppState.selectedLine];
+        document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
+        document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${line ? line.name : '--'}.`;
+    }
     
     // Limpiar marcadores de trenes remotos
     Object.keys(AppState.activeVehicles).forEach(id => {
@@ -1140,8 +1340,17 @@ function handleIncomingMessage(packet) {
 
 function resetPassengerViewOnlyBottomCard() {
     document.getElementById('passenger-active-card').classList.add('hidden');
-    document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
-    document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${METRO_LINES[AppState.selectedLine].name}.`;
+    if (AppState.selectedLine === 'ALL') {
+        document.getElementById('passenger-status-title').innerText = "Red del Metro CDMX";
+        document.getElementById('passenger-status-desc').innerText = "Monitoreando todas las líneas en tiempo real. Selecciona una línea arriba para ver detalles.";
+        document.getElementById('passenger-all-summary-card').classList.remove('hidden');
+        updateAllSummaryCard();
+    } else {
+        document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
+        const line = METRO_LINES[AppState.selectedLine];
+        document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${line ? line.name : '--'}.`;
+        document.getElementById('passenger-all-summary-card').classList.add('hidden');
+    }
 }
 
 function processTrainSignal(packet) {
@@ -1160,8 +1369,13 @@ function processTrainSignal(packet) {
         AppState.activeVehicles[vehicleId].marker.setLatLng(packet.coords);
         AppState.activeVehicles[vehicleId].lastUpdate = Date.now();
         AppState.activeVehicles[vehicleId].lineId = packet.lineId; // Guardar línea actual
+        AppState.activeVehicles[vehicleId].prevStation = packet.prevStation;
+        AppState.activeVehicles[vehicleId].nextStation = packet.nextStation;
+        AppState.activeVehicles[vehicleId].progress = packet.progress;
+        AppState.activeVehicles[vehicleId].isSimulated = packet.isSimulated;
+        AppState.activeVehicles[vehicleId].coords = packet.coords;
         
-        // Actualizar popup dinámicamente con aviso de interacción
+        // Actualizar popup dinámetemente con aviso de interacción
         AppState.activeVehicles[vehicleId].marker.getPopup().setContent(`<b>${line.name}</b><br>Próxima parada: ${packet.nextStation}<br><span style="font-size:10.5px;color:var(--duo-blue);font-weight:700;">Haga clic para enfocar esta línea</span>`);
     } else {
         // Crear nuevo marcador del tren con color oficial
@@ -1191,7 +1405,12 @@ function processTrainSignal(packet) {
         AppState.activeVehicles[vehicleId] = {
             marker: marker,
             lastUpdate: Date.now(),
-            lineId: packet.lineId
+            lineId: packet.lineId,
+            prevStation: packet.prevStation,
+            nextStation: packet.nextStation,
+            progress: packet.progress,
+            isSimulated: packet.isSimulated,
+            coords: packet.coords
         };
         
         // Mostrar botón flotante para enfocar tren
@@ -1232,6 +1451,14 @@ function processTrainSignal(packet) {
             document.getElementById('pass-card-time').innerText = "Transmisión GPS en vivo";
         }
     }
+    
+    // Si estamos en modo "Todas", poblar listado
+    if (AppState.selectedLine === 'ALL') {
+        updateAllSummaryCard();
+    }
+    
+    // Actualizar trazas del mapa dinámicamente si es necesario
+    updateMapStyles();
     
     // Actualizar el banner de otras líneas
     updateOtherLinesBanner();
@@ -1278,6 +1505,12 @@ function processTrainShutdown(packet) {
         }, 5000);
     }
     
+    // Actualizar trazas del mapa y listado
+    updateMapStyles();
+    if (AppState.selectedLine === 'ALL') {
+        updateAllSummaryCard();
+    }
+    
     // Actualizar el banner de otras líneas
     updateOtherLinesBanner();
 }
@@ -1286,7 +1519,10 @@ function processTrainShutdown(packet) {
 function updatePassengerUIForLineChange(lineId) {
     resetPassengerViewOnlyBottomCard();
     // Si no hay ningún tren en la nueva línea seleccionada en el mapa, ocultamos temporalmente el toast de conexión
-    const hasActiveTrainOnLine = Object.values(AppState.activeVehicles).some(v => v.lineId === lineId);
+    const hasActiveTrainOnLine = lineId === 'ALL'
+        ? Object.keys(AppState.activeVehicles).length > 0
+        : Object.values(AppState.activeVehicles).some(v => v.lineId === lineId);
+        
     if (!hasActiveTrainOnLine) {
         document.getElementById('sync-indicator').classList.add('hidden');
     } else {
@@ -1320,6 +1556,10 @@ setInterval(() => {
     
     if (signalLost) {
         updateOtherLinesBanner();
+        updateMapStyles();
+        if (AppState.selectedLine === 'ALL') {
+            updateAllSummaryCard();
+        }
         if (Object.keys(AppState.activeVehicles).length === 0) {
             resetPassengerView();
             const toast = document.getElementById('sync-indicator');

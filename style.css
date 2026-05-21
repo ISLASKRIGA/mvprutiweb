@@ -1241,6 +1241,176 @@ html {
     border-bottom-color: var(--duo-blue-dark);
 }
 
+/* ================= 8. ESTILOS DE VISUALIZACIÓN UNIFICADA DE CONDUCTORES ================= */
+
+/* Chip Especial "Todas las Líneas" */
+.line-chip[data-line="ALL"] {
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border-color: var(--border-light);
+}
+
+.line-chip[data-line="ALL"] .chip-dot {
+    background: linear-gradient(45deg, #f070a1, #005f9e, #af9b1e, #55c4c4, #fcd116, #d01c1f, #f37021, #008d64);
+}
+
+.line-chip[data-line="ALL"].active {
+    background: linear-gradient(135deg, #58cc02, #1cb0f6);
+    color: #ffffff !important;
+    border-color: #46a302 !important;
+    box-shadow: 0 4px 0 #1899d6 !important;
+}
+
+.line-chip[data-line="ALL"].active .chip-dot {
+    border: 1.5px solid #ffffff;
+}
+
+/* Tarjeta y Listado de Resumen de Conductores (Red Completa) */
+.all-summary-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.summary-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--border-light);
+}
+
+.summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.summary-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--text-dark);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.all-summary-trains-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.summary-train-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 2px solid var(--border-light);
+    border-bottom-width: 4px;
+    background-color: #ffffff;
+    transition: transform 0.1s, border-bottom-width 0.1s;
+    user-select: none;
+}
+
+.summary-train-item:active {
+    transform: translateY(2.5px);
+    border-bottom-width: 1.5px;
+}
+
+.summary-train-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.summary-train-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 12px;
+    min-width: 0; /* Permite truncar texto */
+    text-align: left;
+}
+
+.summary-train-route {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.summary-train-route span {
+    font-weight: 400;
+    color: var(--text-light);
+}
+
+.summary-train-eta {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--duo-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.summary-focus-btn {
+    flex-shrink: 0;
+    min-width: 70px;
+}
+
+/* Estado Vacío de Resumen (Sin Conductores) */
+.summary-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    text-align: center;
+    gap: 8px;
+    background-color: #fafafa;
+    border-radius: 14px;
+    border: 1.5px dashed var(--border-light);
+}
+
+.empty-emoji {
+    font-size: 28px;
+    animation: hoverMascot 3s ease-in-out infinite;
+}
+
+.empty-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.empty-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.35;
+    margin: 0;
+}
+
 /* ================= SOPORTE RESPONSIVO Y OPTIMIZACIONES ================= */
 @media (min-width: 768px) {
     /* Pantalla dividida en pantallas de escritorio */
