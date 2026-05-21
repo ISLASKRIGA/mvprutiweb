@@ -318,6 +318,7 @@ const AppState = {
     simProgress: 0,              // Progreso entre estaciones (0 a 100)
     simSpeedMultiplier: 1,       // Multiplicador de velocidad (1, 2, 5, 10)
     gpsWatchId: null,            // WatchID del geolocalizador
+    gpsHeartbeatInterval: null,  // Interval del latido de GPS (evita desconexiones por inactividad)
     vehicleCoords: null,         // Coordenadas actuales del conductor
     
     // Variables para el Pasajero (Usuario)
@@ -327,7 +328,13 @@ const AppState = {
     // Variables de sincronización remota por Internet (MQTT)
     groupCode: "CDMX",           // Código de grupo/sala para sincronizar
     mqttClient: null,            // Cliente de MQTT
-    mqttTopic: ""                // Topic en el que se transmiten/escuchan datos
+    mqttTopic: "",               // Topic en el que se transmiten/escuchan datos
+
+    // Wake Lock para mantener pantalla encendida mientras se conduce
+    wakeLock: null,              // WakeLockSentinel activo
+
+    // Último paquete enviado (para re-enviar tras reconexión MQTT)
+    lastBroadcastPacket: null    // Copia del último packet enviado
 };
 
 // ================= CANAL DE COMUNICACIÓN EN TIEMPO REAL =================
@@ -361,6 +368,9 @@ function broadcastMessage(packet) {
     packet.timestamp = Date.now();
     packet.senderId = DRIVER_SESSION_ID;
     
+    // Guardar una copia del último paquete para poder reenviarlo al reconectar
+    AppState.lastBroadcastPacket = { ...packet };
+    
     // 1. Enviar por BroadcastChannel
     if (realtimeChannel) {
         realtimeChannel.postMessage(packet);
@@ -371,7 +381,11 @@ function broadcastMessage(packet) {
     
     // 3. Enviar por Internet (MQTT) a otros dispositivos
     if (AppState.mqttClient && AppState.mqttClient.connected) {
-        AppState.mqttClient.publish(AppState.mqttTopic, JSON.stringify(packet), { qos: 0, retain: false });
+        // QoS 1 garantiza que el mensaje llegue al menos una vez
+        AppState.mqttClient.publish(AppState.mqttTopic, JSON.stringify(packet), { qos: 1, retain: false });
+    } else if (AppState.mqttClient && !AppState.mqttClient.connected) {
+        // Si no estamos conectados pero el cliente existe, intentar reconectar
+        try { AppState.mqttClient.reconnect(); } catch(e) {}
     }
 }
 
@@ -445,11 +459,10 @@ function updateOtherLinesBanner() {
 
 // ================= SISTEMA DE COMUNICACIÓN POR INTERNET (MQTT) =================
 function initMQTT() {
-    // Si ya existe un cliente activo, desconectarlo
+    // Si ya existe un cliente activo, terminarlo limpiamente
     if (AppState.mqttClient) {
-        try {
-            AppState.mqttClient.end();
-        } catch (e) {}
+        try { AppState.mqttClient.end(true); } catch (e) {}
+        AppState.mqttClient = null;
     }
     
     // Obtener y sanitizar el código de grupo
@@ -465,30 +478,43 @@ function initMQTT() {
     
     try {
         // Conectar al broker EMQX público sobre puerto WSS (seguro para HTTPS)
+        // reconnectPeriod: 1500ms = reconecta agresivamente si se cae la conexión
         AppState.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-            keepalive: 30,
-            clientId: 'ruti_' + Math.random().toString(16).substring(2, 8),
+            keepalive: 20,
+            clientId: 'ruti_' + DRIVER_SESSION_ID,
             clean: true,
-            connectTimeout: 4000,
-            reconnectPeriod: 2000
+            connectTimeout: 6000,
+            reconnectPeriod: 1500    // Reintentar cada 1.5s en caso de caída
         });
         
         AppState.mqttClient.on('connect', () => {
             console.log("¡Conexión exitosa al broker de internet MQTT!");
             updateConnectionStatus('connected');
             
-            // Suscribirse al topic
-            AppState.mqttClient.subscribe(AppState.mqttTopic, (err) => {
+            // Suscribirse al topic con QoS 1
+            AppState.mqttClient.subscribe(AppState.mqttTopic, { qos: 1 }, (err) => {
                 if (err) console.error("Error al suscribirse al topic:", err);
                 else console.log(`Suscrito con éxito a: ${AppState.mqttTopic}`);
             });
+            
+            // Re-enviar el último paquete del conductor tras reconexión para que los pasajeros
+            // sepan inmediatamente que volvemos a estar en línea
+            if (AppState.role === 'vehicle' && AppState.isTracking && AppState.lastBroadcastPacket) {
+                setTimeout(() => {
+                    const resendPacket = { ...AppState.lastBroadcastPacket, timestamp: Date.now() };
+                    try {
+                        AppState.mqttClient.publish(AppState.mqttTopic, JSON.stringify(resendPacket), { qos: 1, retain: false });
+                        console.log("Re-enviado paquete de reconexión del conductor.");
+                    } catch(e) {}
+                }, 500);
+            }
         });
         
         AppState.mqttClient.on('message', (topic, message) => {
             if (topic === AppState.mqttTopic) {
                 try {
                     const packet = JSON.parse(message.toString());
-                    // Evitar procesar nuestros propios paquetes si estamos transmitiendo en otra pestaña (filtrado por senderId)
+                    // Evitar procesar nuestros propios paquetes (filtrado por senderId)
                     if (packet.senderId !== DRIVER_SESSION_ID) {
                         handleIncomingMessage(packet);
                     }
@@ -505,6 +531,12 @@ function initMQTT() {
         
         AppState.mqttClient.on('offline', () => {
             updateConnectionStatus('offline', 'Red offline');
+            // mqtt.js auto-reconecta con reconnectPeriod; solo actualizamos el badge
+        });
+        
+        AppState.mqttClient.on('reconnect', () => {
+            updateConnectionStatus('connecting');
+            console.log("Intentando reconectar al broker MQTT...");
         });
         
         AppState.mqttClient.on('close', () => {
@@ -516,6 +548,20 @@ function initMQTT() {
         updateConnectionStatus('offline', e.message);
     }
 }
+
+// ================= VIGILANTE DE VISIBILIDAD DE PESTAÑA (Wake-Up Guard) =================
+// Cuando el usuario vuelve a la pestaña tras haberla minimizado, podría haber perdido
+// la conexión MQTT. Este listener la reestablece si es necesario.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        const client = AppState.mqttClient;
+        if (client && !client.connected && typeof mqtt !== 'undefined') {
+            console.log("Pestaña volvió a primer plano. Reconectando MQTT...");
+            updateConnectionStatus('connecting');
+            try { client.reconnect(); } catch(e) { initMQTT(); }
+        }
+    }
+});
 
 
 // ================= INICIALIZACIÓN DEL MAPA =================
@@ -1128,6 +1174,25 @@ function toggleTracking() {
         document.getElementById('btn-mode-simulate').disabled = true;
         document.getElementById('btn-mode-gps').disabled = true;
         
+        // --- WAKE LOCK: Evitar que la pantalla se apague mientras se transmite ---
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').then(lock => {
+                AppState.wakeLock = lock;
+                console.log('Wake Lock activado: pantalla no se apagará.');
+                // Reactivar el wake lock si se libera automáticamente (ej. al minimizar)
+                lock.addEventListener('release', () => {
+                    console.log('Wake Lock liberado.');
+                    if (AppState.isTracking) {
+                        navigator.wakeLock.request('screen').then(newLock => {
+                            AppState.wakeLock = newLock;
+                        }).catch(() => {});
+                    }
+                });
+            }).catch(err => {
+                console.warn('Wake Lock no disponible:', err.message);
+            });
+        }
+        
         if (AppState.transmissionMode === 'simulate') {
             startSimulation();
         } else {
@@ -1144,11 +1209,20 @@ function toggleTracking() {
         document.getElementById('btn-mode-simulate').disabled = false;
         document.getElementById('btn-mode-gps').disabled = false;
         
+        // --- Liberar Wake Lock al detener ---
+        if (AppState.wakeLock) {
+            AppState.wakeLock.release().catch(() => {});
+            AppState.wakeLock = null;
+        }
+        
         if (AppState.transmissionMode === 'simulate') {
             stopSimulation();
         } else {
             stopGPSTransmission();
         }
+        
+        // Limpiar último paquete para que no se reenvíe al reconectar
+        AppState.lastBroadcastPacket = null;
         
         // Avisar a los pasajeros que la señal se apagó
         broadcastMessage({
@@ -1251,6 +1325,31 @@ function startGPSTransmission() {
         return;
     }
     
+    // Limpiar cualquier intervalo previo de heartbeat para evitar duplicados
+    if (AppState.gpsHeartbeatInterval) {
+        clearInterval(AppState.gpsHeartbeatInterval);
+        AppState.gpsHeartbeatInterval = null;
+    }
+    
+    // Iniciar interval para transmitir la posición actual como latido cada 3.5 segundos (evita desconexiones si no se mueve)
+    AppState.gpsHeartbeatInterval = setInterval(() => {
+        if (AppState.isTracking && AppState.vehicleCoords) {
+            const line = METRO_LINES[AppState.driverSelectedLine];
+            if (!line) return;
+            
+            broadcastMessage({
+                type: 'TRAIN_UPDATE',
+                lineId: AppState.driverSelectedLine,
+                coords: AppState.vehicleCoords,
+                prevStation: "Posición GPS",
+                nextStation: "En ruta real",
+                progress: 50,
+                isSimulated: false
+            });
+            console.log("GPS Heartbeat sent successfully to MQTT:", AppState.vehicleCoords);
+        }
+    }, 3500);
+    
     AppState.gpsWatchId = navigator.geolocation.watchPosition(
         (position) => {
             const lat = position.coords.latitude;
@@ -1290,6 +1389,11 @@ function stopGPSTransmission() {
     if (AppState.gpsWatchId) {
         navigator.geolocation.clearWatch(AppState.gpsWatchId);
         AppState.gpsWatchId = null;
+    }
+    
+    if (AppState.gpsHeartbeatInterval) {
+        clearInterval(AppState.gpsHeartbeatInterval);
+        AppState.gpsHeartbeatInterval = null;
     }
     
     document.getElementById('gps-status-text').innerText = "GPS Inactivo";
@@ -1535,7 +1639,7 @@ function updatePassengerUIForLineChange(lineId) {
 
 
 // ================= TEMPORIZADOR DE MANTENIMIENTO DE SEÑAL =================
-// Si un emisor de tren deja de transmitir (p.ej. se cierra el tab), limpiamos su señal después de 8 segundos sin recibir pings.
+// Si un emisor de tren deja de transmitir (p.ej. se cierra el tab), limpiamos su señal después de 25 segundos sin recibir pings.
 setInterval(() => {
     if (AppState.role !== 'passenger') return;
     
@@ -1546,7 +1650,7 @@ setInterval(() => {
         // Excluimos la señal de conductor local para evitar bugs en pruebas unitarias del mismo navegador
         if (id === 'local-driver') return; 
         
-        if (now - AppState.activeVehicles[id].lastUpdate > 8000) {
+        if (now - AppState.activeVehicles[id].lastUpdate > 25000) {
             // Signal timeout
             AppState.map.removeLayer(AppState.activeVehicles[id].marker);
             delete AppState.activeVehicles[id];

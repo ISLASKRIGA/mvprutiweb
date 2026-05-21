@@ -1452,3 +1452,29 @@ html {
         grid-template-columns: 1fr;
     }
 }
+
+/* Tarjeta de advertencia de segundo plano */
+.bg-warning-card {
+    display: flex;
+    background-color: #fffaf0;
+    border: 2px solid #ffc800;
+    border-bottom: 5px solid #e0af00;
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin: 10px 0 16px 0;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.warning-emoji {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.warning-text {
+    font-size: 11.5px;
+    color: #8c6000;
+    line-height: 1.4;
+    margin: 0;
+    font-family: var(--font-body);
+}
