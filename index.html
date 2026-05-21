@@ -19,6 +19,13 @@
     
     <!-- MQTT.js para comunicación en tiempo real a través de internet en diferentes dispositivos -->
     <script src="https://unpkg.com/mqtt@5.3.0/dist/mqtt.min.js"></script>
+    
+    <!-- PWA Manifest para instalación en pantalla de inicio -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#58cc02">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Ruti">
 </head>
 <body class="light-theme">
     
@@ -313,6 +320,15 @@
             </div>
         </footer>
     </div>
+    
+    <!-- Registro del Service Worker para modo background -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('[SW] Registrado OK, scope:', reg.scope))
+                .catch(err => console.warn('[SW] Error al registrar:', err));
+        }
+    </script>
     
     <!-- Archivo lógico de la aplicación -->
     <script src="app.js"></script>

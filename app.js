@@ -333,6 +333,10 @@ const AppState = {
     // Wake Lock para mantener pantalla encendida mientras se conduce
     wakeLock: null,              // WakeLockSentinel activo
 
+    // Audio silencioso (truco para evitar suspensión con pantalla apagada)
+    silentAudioCtx: null,        // AudioContext del audio silencioso
+    silentOscillator: null,      // Oscilador silencioso activo
+
     // Último paquete enviado (para re-enviar tras reconexión MQTT)
     lastBroadcastPacket: null    // Copia del último packet enviado
 };
@@ -554,14 +558,36 @@ function initMQTT() {
 // la conexión MQTT. Este listener la reestablece si es necesario.
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+        // 1. Reconectar MQTT si se cayó
         const client = AppState.mqttClient;
         if (client && !client.connected && typeof mqtt !== 'undefined') {
             console.log("Pestaña volvió a primer plano. Reconectando MQTT...");
             updateConnectionStatus('connecting');
             try { client.reconnect(); } catch(e) { initMQTT(); }
         }
+        
+        // 2. Re-adquirir Wake Lock si el conductor está transmitiendo
+        if (AppState.isTracking && 'wakeLock' in navigator && !AppState.wakeLock) {
+            navigator.wakeLock.request('screen').then(lock => {
+                AppState.wakeLock = lock;
+                console.log('Wake Lock re-adquirido tras volver al primer plano.');
+            }).catch(() => {});
+        }
+        
+        // 3. Si el audio silencioso se cortó, reiniciarlo
+        if (AppState.isTracking && !AppState.silentAudioCtx) {
+            startSilentAudio();
+        }
     }
 });
+
+// Enviar PING al Service Worker cada 25 segundos para evitar que el SO lo
+// "mate" por inactividad durante transmisiones largas del conductor.
+setInterval(() => {
+    if (AppState.isTracking && navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'PING' });
+    }
+}, 25000);
 
 
 // ================= INICIALIZACIÓN DEL MAPA =================
@@ -1159,6 +1185,49 @@ function updateDriverPanelUI() {
 // Lógica de encendido / apagado del rastreador
 document.getElementById('btn-start-tracking').addEventListener('click', toggleTracking);
 
+// ================= AUDIO SILENCIOSO (BACKGROUND KEEP-ALIVE TRICK) =================
+// Reproduce un tono inaudible (volumen < 0.001) que mantiene el motor de audio del
+// navegador activo. En Android Chrome e iOS Safari esto evita que el SO suspenda
+// el tab cuando la pantalla se apaga, igual que hace Spotify Web o Google Maps.
+function startSilentAudio() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        
+        AppState.silentAudioCtx = new AudioCtx();
+        
+        const oscillator = AppState.silentAudioCtx.createOscillator();
+        const gainNode = AppState.silentAudioCtx.createGain();
+        
+        // Volumen absolutamente inaudible (0.0005 = 0.05% del volumen máximo)
+        gainNode.gain.value = 0.0005;
+        
+        oscillator.frequency.value = 1; // 1 Hz — infrasonido, no se escucha
+        oscillator.connect(gainNode);
+        gainNode.connect(AppState.silentAudioCtx.destination);
+        oscillator.start();
+        
+        AppState.silentOscillator = oscillator;
+        console.log('✅ Audio silencioso activado: el SO no suspenderá el tab.');
+    } catch (e) {
+        console.warn('⚠️ Audio silencioso no disponible:', e.message);
+    }
+}
+
+function stopSilentAudio() {
+    try {
+        if (AppState.silentOscillator) {
+            AppState.silentOscillator.stop();
+            AppState.silentOscillator = null;
+        }
+        if (AppState.silentAudioCtx) {
+            AppState.silentAudioCtx.close();
+            AppState.silentAudioCtx = null;
+        }
+        console.log('🔇 Audio silencioso detenido.');
+    } catch (e) {}
+}
+
 function toggleTracking() {
     const btn = document.getElementById('btn-start-tracking');
     
@@ -1173,6 +1242,9 @@ function toggleTracking() {
         document.getElementById('select-driver-line').disabled = true;
         document.getElementById('btn-mode-simulate').disabled = true;
         document.getElementById('btn-mode-gps').disabled = true;
+        
+        // --- AUDIO SILENCIOSO: Evitar suspensión de tab aunque la pantalla se apague ---
+        startSilentAudio();
         
         // --- WAKE LOCK: Evitar que la pantalla se apague mientras se transmite ---
         if ('wakeLock' in navigator) {
@@ -1209,11 +1281,12 @@ function toggleTracking() {
         document.getElementById('btn-mode-simulate').disabled = false;
         document.getElementById('btn-mode-gps').disabled = false;
         
-        // --- Liberar Wake Lock al detener ---
+        // --- Liberar Wake Lock y Audio Silencioso al detener ---
         if (AppState.wakeLock) {
             AppState.wakeLock.release().catch(() => {});
             AppState.wakeLock = null;
         }
+        stopSilentAudio();
         
         if (AppState.transmissionMode === 'simulate') {
             stopSimulation();
