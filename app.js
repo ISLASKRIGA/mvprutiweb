@@ -375,6 +375,68 @@ function broadcastMessage(packet) {
     }
 }
 
+// ================= CONTROLADOR DE ESTADO DE CONEXIÓN (MQTT STATUS) =================
+function updateConnectionStatus(status, details = "") {
+    const badge = document.getElementById('badge-conn');
+    if (!badge) return;
+    
+    badge.className = 'badge'; // Reiniciar clases
+    
+    if (status === 'connected') {
+        badge.classList.add('badge-conn-connected');
+        badge.innerText = `🌐 ${AppState.groupCode}`;
+        badge.title = `Conectado al servidor. Grupo: ${AppState.groupCode}`;
+    } else if (status === 'connecting') {
+        badge.classList.add('badge-conn-connecting');
+        badge.innerText = "🌐 ...";
+        badge.title = "Estableciendo conexión en tiempo real...";
+    } else {
+        badge.classList.add('badge-conn-offline');
+        badge.innerText = "🌐 Offline";
+        badge.title = `Desconectado: ${details || 'Revisa tu red o Brave Shields'}.`;
+    }
+}
+
+// ================= NOTIFICACIÓN DE CONDUCTORES EN OTRAS LÍNEAS =================
+function updateOtherLinesBanner() {
+    const banner = document.getElementById('passenger-other-lines-banner');
+    const listContainer = document.getElementById('other-lines-list');
+    if (!banner || !listContainer) return;
+    
+    // Buscar todas las líneas con conductores activos que no sean la seleccionada actual
+    const activeLines = new Set();
+    Object.values(AppState.activeVehicles).forEach(vehicle => {
+        if (vehicle.lineId && vehicle.lineId !== AppState.selectedLine) {
+            activeLines.add(vehicle.lineId);
+        }
+    });
+    
+    if (activeLines.size > 0) {
+        listContainer.innerHTML = '';
+        activeLines.forEach(lineId => {
+            const line = METRO_LINES[lineId];
+            if (!line) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'other-line-chip-btn';
+            btn.style.backgroundColor = line.color;
+            btn.style.boxShadow = `0 3px 0 ${line.colorDark}`;
+            btn.innerText = `Ver ${line.name}`;
+            
+            btn.addEventListener('click', () => {
+                selectMetroLine(lineId);
+                updatePassengerUIForLineChange(lineId);
+            });
+            
+            listContainer.appendChild(btn);
+        });
+        
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
 // ================= SISTEMA DE COMUNICACIÓN POR INTERNET (MQTT) =================
 function initMQTT() {
     // Si ya existe un cliente activo, desconectarlo
@@ -393,6 +455,7 @@ function initMQTT() {
     AppState.mqttTopic = `ruti/groups/${AppState.groupCode}/trains`;
     
     console.log(`Conectando a broker MQTT en el canal: ${AppState.mqttTopic}`);
+    updateConnectionStatus('connecting');
     
     try {
         // Conectar al broker EMQX público sobre puerto WSS (seguro para HTTPS)
@@ -406,6 +469,7 @@ function initMQTT() {
         
         AppState.mqttClient.on('connect', () => {
             console.log("¡Conexión exitosa al broker de internet MQTT!");
+            updateConnectionStatus('connected');
             
             // Suscribirse al topic
             AppState.mqttClient.subscribe(AppState.mqttTopic, (err) => {
@@ -430,10 +494,20 @@ function initMQTT() {
         
         AppState.mqttClient.on('error', (err) => {
             console.error("Error de conexión MQTT:", err);
+            updateConnectionStatus('offline', err.message);
+        });
+        
+        AppState.mqttClient.on('offline', () => {
+            updateConnectionStatus('offline', 'Red offline');
+        });
+        
+        AppState.mqttClient.on('close', () => {
+            updateConnectionStatus('offline', 'Conexión cerrada');
         });
         
     } catch (e) {
         console.error("No se pudo iniciar el cliente MQTT:", e);
+        updateConnectionStatus('offline', e.message);
     }
 }
 
@@ -664,6 +738,7 @@ function setAppRole(role) {
         initMQTT();
     } else {
         console.warn("Librería MQTT no cargada. La sincronización solo funcionará a nivel local.");
+        updateConnectionStatus('offline', 'Librería MQTT bloqueada o no cargada');
     }
     
     // Solicitar ubicación en tiempo real en segundo plano (iOS Style)
@@ -1157,6 +1232,9 @@ function processTrainSignal(packet) {
             document.getElementById('pass-card-time').innerText = "Transmisión GPS en vivo";
         }
     }
+    
+    // Actualizar el banner de otras líneas
+    updateOtherLinesBanner();
 }
 
 // Enfocar al tren desde el botón flotante
@@ -1199,6 +1277,9 @@ function processTrainShutdown(packet) {
             }
         }, 5000);
     }
+    
+    // Actualizar el banner de otras líneas
+    updateOtherLinesBanner();
 }
 
 // Al cambiar el pasajero de línea en la barra superior
@@ -1211,6 +1292,9 @@ function updatePassengerUIForLineChange(lineId) {
     } else {
         document.getElementById('sync-indicator').classList.remove('hidden');
     }
+    
+    // Actualizar el banner de otras líneas
+    updateOtherLinesBanner();
 }
 
 
@@ -1234,11 +1318,14 @@ setInterval(() => {
         }
     });
     
-    if (signalLost && Object.keys(AppState.activeVehicles).length === 0) {
-        resetPassengerView();
-        const toast = document.getElementById('sync-indicator');
-        toast.classList.add('hidden');
-        document.getElementById('btn-focus-train').classList.add('hidden');
+    if (signalLost) {
+        updateOtherLinesBanner();
+        if (Object.keys(AppState.activeVehicles).length === 0) {
+            resetPassengerView();
+            const toast = document.getElementById('sync-indicator');
+            toast.classList.add('hidden');
+            document.getElementById('btn-focus-train').classList.add('hidden');
+        }
     }
 }, 3000);
 

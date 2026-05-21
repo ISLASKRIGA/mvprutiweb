@@ -133,6 +133,7 @@
                 </div>
                 <span class="logo-text">ruti</span>
                 <span id="badge-role" class="badge badge-passenger">Pasajero</span>
+                <span id="badge-conn" class="badge badge-conn-connecting">🌐 ...</span>
             </div>
             <button id="btn-change-role" class="btn-chunky btn-secondary btn-small">
                 Cambiar Rol
@@ -204,6 +205,17 @@
                         </div>
                         <div class="route-meta">
                             <span id="pass-card-time">Calculando arribo...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banner de otras líneas con conductores activos (iOS Style) -->
+                <div id="passenger-other-lines-banner" class="info-card-chunky other-lines-banner hidden">
+                    <div class="banner-avatar">🔔</div>
+                    <div class="banner-content">
+                        <h5 class="banner-title">¡Conductores activos en otras líneas!</h5>
+                        <div id="other-lines-list" class="other-lines-chips-list">
+                            <!-- Los botones se generarán dinámicamente -->
                         </div>
                     </div>
                 </div>
