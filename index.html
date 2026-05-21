@@ -155,170 +155,172 @@
         </div>
         
         <!-- MAPA Y OVERLAYS -->
-        <div class="map-wrapper">
-            <div id="map"></div>
-            
-            <!-- Botones flotantes (iOS Style) -->
-            <div class="floating-controls">
-                <button id="btn-my-location" class="fab-btn" title="Mi ubicación">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                        <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
-                    </svg>
-                </button>
-                <button id="btn-focus-train" class="fab-btn hidden" title="Enfocar Tren">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <rect x="4" y="3" width="16" height="16" rx="2" />
-                        <path d="M4 11h16" />
-                        <circle cx="8" cy="15" r="1" fill="currentColor"/>
-                        <circle cx="16" cy="15" r="1" fill="currentColor"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Indicador de Sincronización en Tiempo Real -->
-            <div id="sync-indicator" class="sync-toast hidden">
-                <span class="toast-dot pulsing-green"></span>
-                <span class="toast-text">Conectado a señal de tren</span>
-            </div>
-        </div>
-        
-        <!-- PANELES DE INFORMACIÓN / CONTROL (BOTTOM SHEET) -->
-        <footer class="bottom-sheet">
-            <!-- PANEL DEL PASAJERO -->
-            <div id="panel-passenger" class="sheet-content active">
-                <div class="sheet-drag-handle"></div>
-                <div class="sheet-header">
-                    <div class="status-avatar">
-                        <div class="avatar-train-pulse">🚇</div>
-                    </div>
-                    <div class="status-details">
-                        <h4 id="passenger-status-title">Buscando trenes...</h4>
-                        <p id="passenger-status-desc">Selecciona una línea de metro arriba para ver su trazado y trenes activos.</p>
-                    </div>
-                </div>
+        <div class="main-content">
+            <div class="map-wrapper">
+                <div id="map"></div>
                 
-                <div id="passenger-active-card" class="info-card-chunky hidden">
-                    <div class="card-line-badge" id="pass-card-line">L1</div>
-                    <div class="card-route-info">
-                        <div class="route-stations">
-                            <span class="station-name bold" id="pass-card-current">--</span>
-                            <span class="route-arrow">➔</span>
-                            <span class="station-name" id="pass-card-next">--</span>
-                        </div>
-                        <div class="duo-progress-bar-container">
-                            <div class="duo-progress-bar-fill" id="pass-card-progress" style="width: 0%;"></div>
-                        </div>
-                        <div class="route-meta">
-                            <span id="pass-card-time">Calculando arribo...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Resumen de todos los conductores activos (Red Completa) -->
-                <div id="passenger-all-summary-card" class="info-card-chunky all-summary-card hidden">
-                    <div class="summary-header-row">
-                        <span class="summary-dot pulsing-green"></span>
-                        <h5 class="summary-title">Conductores en Servicio</h5>
-                    </div>
-                    <div id="all-summary-trains-list" class="all-summary-trains-list">
-                        <!-- Generado dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Banner de otras líneas con conductores activos (iOS Style) -->
-                <div id="passenger-other-lines-banner" class="info-card-chunky other-lines-banner hidden">
-                    <div class="banner-avatar">🔔</div>
-                    <div class="banner-content">
-                        <h5 class="banner-title">¡Conductores activos en otras líneas!</h5>
-                        <div id="other-lines-list" class="other-lines-chips-list">
-                            <!-- Los botones se generarán dinámicamente -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Modo Demo rápido -->
-                <div class="passenger-demo-hint">
-                    <p>💡 <strong>Tip de Prueba:</strong> Abre otra pestaña de esta app como <strong>Conductor</strong> para emitir señal en tiempo real y ver el tren moverse aquí.</p>
-                </div>
-            </div>
-            
-            <!-- PANEL DEL CONDUCTOR (VEHÍCULO) -->
-            <div id="panel-vehicle" class="sheet-content">
-                <div class="sheet-drag-handle"></div>
-                
-                <div class="driver-controls-grid">
-                    <div class="control-box">
-                        <label class="control-label">1. Selecciona la línea que manejas</label>
-                        <select id="select-driver-line" class="chunky-select">
-                            <!-- Se poblará con las líneas del metro -->
-                        </select>
-                    </div>
-                    
-                    <div class="control-box">
-                        <label class="control-label">2. Modo de transmisión</label>
-                        <div class="transmission-modes">
-                            <button id="btn-mode-simulate" class="btn-toggle active">
-                                <span>🤖 Simular Ruta</span>
-                            </button>
-                            <button id="btn-mode-gps" class="btn-toggle">
-                                <span>📡 GPS del Celular</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Sección Simulación -->
-                <div id="simulation-settings" class="settings-panel">
-                    <div class="simulation-info-row">
-                        <div class="sim-stat">
-                            <span class="sim-stat-label">Estación Actual</span>
-                            <span id="sim-current-station" class="sim-stat-value">--</span>
-                        </div>
-                        <div class="sim-stat">
-                            <span class="sim-stat-label">Siguiente Parada</span>
-                            <span id="sim-next-station" class="sim-stat-value">--</span>
-                        </div>
-                    </div>
-                    
-                    <div class="speed-control-container">
-                        <label class="control-label">Velocidad de Simulación</label>
-                        <div class="speed-chips">
-                            <button class="speed-chip active" data-speed="1">1x</button>
-                            <button class="speed-chip" data-speed="2">2x</button>
-                            <button class="speed-chip" data-speed="5">5x</button>
-                            <button class="speed-chip" data-speed="10">10x</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Sección GPS Real -->
-                <div id="gps-settings" class="settings-panel hidden">
-                    <div class="gps-status-card">
-                        <div class="gps-indicator-dot pulsing-red" id="gps-dot"></div>
-                        <div class="gps-meta-info">
-                            <span class="gps-status-text" id="gps-status-text">GPS Inactivo</span>
-                            <span class="gps-coords-text" id="gps-coords-text">Lat: --, Lng: --</span>
-                        </div>
-                    </div>
-                    <p class="gps-disclaimer">Se usará el sensor de geolocalización de tu dispositivo para transmitir la ubicación exacta.</p>
-                </div>
-                
-                <!-- Advertencia de Suspensión en Segundo Plano -->
-                <div class="bg-warning-card">
-                    <span class="warning-emoji">⚠️</span>
-                    <p class="warning-text"><strong>Mantén la pantalla encendida:</strong> En celulares, para que los pasajeros te sigan en tiempo real, no bloquees tu teléfono ni minimices el navegador.</p>
-                </div>
-                
-                <!-- Botón de Acción Principal -->
-                <div class="action-btn-wrapper">
-                    <button id="btn-start-tracking" class="btn-chunky btn-primary btn-full">
-                        Comenzar Transmisión
+                <!-- Botones flotantes (iOS Style) -->
+                <div class="floating-controls">
+                    <button id="btn-my-location" class="fab-btn" title="Mi ubicación">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+                        </svg>
+                    </button>
+                    <button id="btn-focus-train" class="fab-btn hidden" title="Enfocar Tren">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="4" y="3" width="16" height="16" rx="2" />
+                            <path d="M4 11h16" />
+                            <circle cx="8" cy="15" r="1" fill="currentColor"/>
+                            <circle cx="16" cy="15" r="1" fill="currentColor"/>
+                        </svg>
                     </button>
                 </div>
+                
+                <!-- Indicador de Sincronización en Tiempo Real -->
+                <div id="sync-indicator" class="sync-toast hidden">
+                    <span class="toast-dot pulsing-green"></span>
+                    <span class="toast-text">Conectado a señal de tren</span>
+                </div>
             </div>
-        </footer>
+            
+            <!-- PANELES DE INFORMACIÓN / CONTROL (BOTTOM SHEET) -->
+            <footer class="bottom-sheet">
+                <!-- PANEL DEL PASAJERO -->
+                <div id="panel-passenger" class="sheet-content active">
+                    <div class="sheet-drag-handle"></div>
+                    <div class="sheet-header">
+                        <div class="status-avatar">
+                            <div class="avatar-train-pulse">🚇</div>
+                        </div>
+                        <div class="status-details">
+                            <h4 id="passenger-status-title">Buscando trenes...</h4>
+                            <p id="passenger-status-desc">Selecciona una línea de metro arriba para ver su trazado y trenes activos.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="passenger-active-card" class="info-card-chunky hidden">
+                        <div class="card-line-badge" id="pass-card-line">L1</div>
+                        <div class="card-route-info">
+                            <div class="route-stations">
+                                <span class="station-name bold" id="pass-card-current">--</span>
+                                <span class="route-arrow">➔</span>
+                                <span class="station-name" id="pass-card-next">--</span>
+                            </div>
+                            <div class="duo-progress-bar-container">
+                                <div class="duo-progress-bar-fill" id="pass-card-progress" style="width: 0%;"></div>
+                            </div>
+                            <div class="route-meta">
+                                <span id="pass-card-time">Calculando arribo...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de todos los conductores activos (Red Completa) -->
+                    <div id="passenger-all-summary-card" class="info-card-chunky all-summary-card hidden">
+                        <div class="summary-header-row">
+                            <span class="summary-dot pulsing-green"></span>
+                            <h5 class="summary-title">Conductores en Servicio</h5>
+                        </div>
+                        <div id="all-summary-trains-list" class="all-summary-trains-list">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Banner de otras líneas con conductores activos (iOS Style) -->
+                    <div id="passenger-other-lines-banner" class="info-card-chunky other-lines-banner hidden">
+                        <div class="banner-avatar">🔔</div>
+                        <div class="banner-content">
+                            <h5 class="banner-title">¡Conductores activos en otras líneas!</h5>
+                            <div id="other-lines-list" class="other-lines-chips-list">
+                                <!-- Los botones se generarán dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modo Demo rápido -->
+                    <div class="passenger-demo-hint">
+                        <p>💡 <strong>Tip de Prueba:</strong> Abre otra pestaña de esta app como <strong>Conductor</strong> para emitir señal en tiempo real y ver el tren moverse aquí.</p>
+                    </div>
+                </div>
+                
+                <!-- PANEL DEL CONDUCTOR (VEHÍCULO) -->
+                <div id="panel-vehicle" class="sheet-content">
+                    <div class="sheet-drag-handle"></div>
+                    
+                    <div class="driver-controls-grid">
+                        <div class="control-box">
+                            <label class="control-label">1. Línea que manejas</label>
+                            <select id="select-driver-line" class="chunky-select">
+                                <!-- Se poblará con las líneas del metro -->
+                            </select>
+                        </div>
+                        
+                        <div class="control-box">
+                            <label class="control-label">2. Modo de transmisión</label>
+                            <div class="transmission-modes">
+                                <button id="btn-mode-simulate" class="btn-toggle active">
+                                    <span>🤖 Simular</span>
+                                </button>
+                                <button id="btn-mode-gps" class="btn-toggle">
+                                    <span>📡 GPS</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección Simulación -->
+                    <div id="simulation-settings" class="settings-panel">
+                        <div class="simulation-info-row">
+                            <div class="sim-stat">
+                                <span class="sim-stat-label">Estación Actual</span>
+                                <span id="sim-current-station" class="sim-stat-value">--</span>
+                            </div>
+                            <div class="sim-stat">
+                                <span class="sim-stat-label">Siguiente Parada</span>
+                                <span id="sim-next-station" class="sim-stat-value">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="speed-control-container">
+                            <label class="control-label">Velocidad de Simulación</label>
+                            <div class="speed-chips">
+                                <button class="speed-chip active" data-speed="1">1x</button>
+                                <button class="speed-chip" data-speed="2">2x</button>
+                                <button class="speed-chip" data-speed="5">5x</button>
+                                <button class="speed-chip" data-speed="10">10x</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección GPS Real -->
+                    <div id="gps-settings" class="settings-panel hidden">
+                        <div class="gps-status-card">
+                            <div class="gps-indicator-dot pulsing-red" id="gps-dot"></div>
+                            <div class="gps-meta-info">
+                                <span class="gps-status-text" id="gps-status-text">GPS Inactivo</span>
+                                <span class="gps-coords-text" id="gps-coords-text">Lat: --, Lng: --</span>
+                            </div>
+                        </div>
+                        <p class="gps-disclaimer">Se usará el sensor de geolocalización de tu dispositivo para transmitir la ubicación exacta.</p>
+                    </div>
+                    
+                    <!-- Advertencia de Suspensión en Segundo Plano -->
+                    <div class="bg-warning-card">
+                        <span class="warning-emoji">⚠️</span>
+                        <p class="warning-text"><strong>Mantén la pantalla encendida:</strong> En celulares, para que los pasajeros te sigan en tiempo real, no bloquees tu teléfono ni minimices el navegador.</p>
+                    </div>
+                    
+                    <!-- Botón de Acción Principal -->
+                    <div class="action-btn-wrapper">
+                        <button id="btn-start-tracking" class="btn-chunky btn-primary btn-full">
+                            Comenzar Transmisión
+                        </button>
+                    </div>
+                </div>
+            </footer>
+        </div>
     </div>
     
     <!-- Registro del Service Worker para modo background -->
