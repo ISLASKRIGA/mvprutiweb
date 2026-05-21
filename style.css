@@ -1,1350 +1,2072 @@
 /* ==========================================================================
-   RUTI — PREMIUM RESPONSIVE DESIGN SYSTEM
-   Inspired by: Duolingo, Apple Maps, iOS 17, Google Material You
+   RUSI - HOJA DE ESTILOS PREMIUM (ESTILO DUOLINGO & iOS)
    ========================================================================== */
 
-/* ───────────────────────────── DESIGN TOKENS ──────────────────────────── */
 :root {
-  /* Brand Colors */
-  --green:        #58cc02;
-  --green-dark:   #46a302;
-  --green-glow:   rgba(88, 204, 2, 0.18);
-  --blue:         #1cb0f6;
-  --blue-dark:    #1899d6;
-  --blue-glow:    rgba(28, 176, 246, 0.18);
-  --orange:       #ff9600;
-  --orange-dark:  #e67c00;
-  --red:          #ff4b4b;
-  --red-dark:     #ea2b2b;
-  --yellow:       #ffc800;
-  --yellow-dark:  #e0af00;
-  --pink:         #f070a1;
-  --purple:       #ce82ff;
-
-  /* Neutral Palette */
-  --ink-900:  #1a1a1a;
-  --ink-700:  #3c3c3c;
-  --ink-500:  #6b7280;
-  --ink-300:  #b0b8c1;
-  --ink-100:  #e8ecf0;
-  --ink-50:   #f4f6f8;
-  --white:    #ffffff;
-
-  /* Surfaces */
-  --surface-0:   #ffffff;
-  --surface-1:   #f7f9fb;
-  --surface-2:   #eef1f5;
-
-  /* Typography */
-  --font-head: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'Inter',  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-  /* Spacing */
-  --r-xs:  8px;
-  --r-sm:  12px;
-  --r-md:  16px;
-  --r-lg:  20px;
-  --r-xl:  24px;
-  --r-2xl: 28px;
-  --r-3xl: 32px;
-
-  /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-lg:  0 12px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
-  --shadow-xl:  0 24px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
-
-  /* Layout */
-  --header-h:      58px;
-  --chips-h:       56px;
-  --sheet-mobile:  220px;  /* bottom sheet height on mobile */
-  --sidebar-w:     360px;  /* sidebar width on desktop */
-
-  /* Transitions */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Paleta Duolingo */
+    --duo-green: #58cc02;
+    --duo-green-dark: #46a302;
+    --duo-blue: #1cb0f6;
+    --duo-blue-dark: #1899d6;
+    --duo-orange: #ff9600;
+    --duo-orange-dark: #e67c00;
+    --duo-red: #ff4b4b;
+    --duo-red-dark: #ea2b2b;
+    --duo-yellow: #ffc800;
+    --duo-yellow-dark: #e6a500;
+    --duo-pink: #f070a1;
+    --duo-pink-dark: #d04f7c;
+    
+    /* Colores Neutros Neutros */
+    --text-dark: #3c3c3c;
+    --text-muted: #afafaf;
+    --text-light: #777777;
+    --bg-light: #ffffff;
+    --bg-app: #f7f7f7;
+    --border-light: #e5e5e5;
+    
+    /* Tipografías y Dimensiones */
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    --ios-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ───────────────────────────── RESET ──────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  height: 100%;
-  height: -webkit-fill-available;
-  font-size: 16px;
+/* ================= RESET Y CONFIGURACIONES BÁSICAS ================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family: var(--font-body);
-  background: var(--surface-1);
-  color: var(--ink-700);
-  height: 100%;
-  height: -webkit-fill-available;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-body);
+    background-color: var(--bg-app);
+    color: var(--text-dark);
+    height: 100vh;
+    height: -webkit-fill-available;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-button {
-  font-family: var(--font-body);
-  cursor: pointer;
-  outline: none;
-  border: none;
-  background: none;
+html {
+    height: -webkit-fill-available;
 }
 
-input, select {
-  font-family: var(--font-body);
-  outline: none;
+/* Scrollbar Personalizado (Duolingo Style) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--ink-100); border-radius: 99px; }
-
-/* ───────────────────────────── CHUNKY BUTTONS (DUOLINGO DNA) ─────────── */
+/* ================= ESTILOS DE ELEMENTOS CHUNKY (DUOLINGO) ================= */
 .btn-chunky {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-head);
-  font-weight: 800;
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 13px 24px;
-  border-radius: 14px;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform 0.08s, box-shadow 0.08s, border-bottom-width 0.08s;
-  user-select: none;
-  white-space: nowrap;
-  text-decoration: none;
-  position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.8px;
+    padding: 14px 28px;
+    border-radius: 16px;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    user-select: none;
+    text-decoration: none;
 }
 
 .btn-chunky.btn-primary {
-  background: var(--green);
-  border-color: var(--green);
-  border-bottom: 4px solid var(--green-dark);
-  color: var(--white);
-  box-shadow: 0 2px 0 var(--green-dark);
+    background-color: var(--duo-green);
+    border-color: var(--duo-green);
+    border-bottom: 5px solid var(--duo-green-dark);
+    color: #ffffff;
 }
-.btn-chunky.btn-primary:hover  { background: #5ed302; }
-.btn-chunky.btn-primary:active { border-bottom-width: 1px; transform: translateY(3px); }
+
+.btn-chunky.btn-primary:active {
+    border-bottom-width: 1px;
+    transform: translateY(4px);
+}
 
 .btn-chunky.btn-secondary {
-  background: var(--white);
-  border-color: var(--ink-100);
-  border-bottom: 4px solid var(--ink-100);
-  color: var(--blue);
-  box-shadow: 0 2px 0 var(--ink-100);
+    background-color: #ffffff;
+    border-color: var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    color: var(--duo-blue);
 }
-.btn-chunky.btn-secondary:hover  { background: var(--surface-1); }
-.btn-chunky.btn-secondary:active { border-bottom-width: 1px; transform: translateY(3px); }
 
-.btn-chunky.btn-danger {
-  background: var(--red);
-  border-color: var(--red);
-  border-bottom: 4px solid var(--red-dark);
-  color: var(--white);
+.btn-chunky.btn-secondary:active {
+    border-bottom-width: 1px;
+    transform: translateY(4px);
 }
-.btn-chunky.btn-danger:active { border-bottom-width: 1px; transform: translateY(3px); }
 
 .btn-chunky.btn-small {
-  padding: 8px 16px;
-  font-size: 11px;
-  border-radius: 10px;
-  border-bottom-width: 3px;
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 12px;
+    border-bottom-width: 4px;
 }
-.btn-chunky.btn-small:active { border-bottom-width: 1px; transform: translateY(2px); }
 
-.btn-chunky.btn-full { width: 100%; }
+.btn-chunky.btn-small:active {
+    border-bottom-width: 1px;
+    transform: translateY(3px);
+}
 
-/* ─────────────────────────── OVERLAY / WELCOME SCREEN ─────────────────── */
+.btn-chunky.btn-full {
+    width: 100%;
+}
+
+/* ================= 1. PANTALLA DE SELECCIÓN DE ROL (OVERLAY) ================= */
 .overlay-screen {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(160deg, #f0fde8 0%, #e8f7fe 50%, #fef3f0 100%);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-app);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .overlay-screen.active {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 
 .selector-modal {
-  background: var(--white);
-  border-radius: 28px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 6px solid var(--ink-100);
-  padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  width: 100%;
-  max-width: 440px;
-  box-shadow: var(--shadow-xl);
-  animation: modalIn 0.45s var(--ease-spring) both;
+    max-width: 480px;
+    width: 100%;
+    margin: auto;
+    background-color: #ffffff;
+    border: 2px solid var(--border-light);
+    border-bottom: 6px solid var(--border-light);
+    border-radius: 28px;
+    padding: 32px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: var(--card-shadow);
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .mascot-container {
-  animation: float 4s ease-in-out infinite;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+    animation: hoverMascot 4s ease-in-out infinite;
 }
 
 .app-title-huge {
-  font-family: var(--font-head);
-  font-size: clamp(36px, 8vw, 48px);
-  font-weight: 800;
-  color: var(--green);
-  letter-spacing: -2px;
-  line-height: 1;
-  margin-bottom: 6px;
+    font-family: var(--font-heading);
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--duo-green);
+    letter-spacing: -1.5px;
+    margin-bottom: 4px;
+    user-select: none;
 }
 
 .app-tagline {
-  font-size: 13px;
-  color: var(--ink-500);
-  font-weight: 500;
-  margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 24px;
 }
 
 .welcome-text-container {
-  margin-bottom: 18px;
+    margin-bottom: 24px;
 }
+
 .welcome-text-container h2 {
-  font-family: var(--font-head);
-  font-size: 19px;
-  font-weight: 800;
-  color: var(--ink-700);
-  margin-bottom: 4px;
+    font-family: var(--font-heading);
+    font-size: 22px;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
 }
+
 .welcome-text-container p {
-  font-size: 13px;
-  color: var(--ink-500);
+    font-size: 14px;
+    color: var(--text-muted);
 }
 
-/* Group Code Input */
-.group-code-wrapper {
-  width: 100%;
-  margin-bottom: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.group-code-label {
-  font-family: var(--font-head);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--ink-500);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.group-code-input-container { width: 100%; max-width: 260px; }
-
-.chunky-input {
-  width: 100%;
-  padding: 11px 16px;
-  border-radius: 14px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 5px solid var(--ink-100);
-  font-family: var(--font-head);
-  font-weight: 800;
-  font-size: 16px;
-  color: var(--ink-700);
-  text-align: center;
-  text-transform: uppercase;
-  background: var(--surface-1);
-  transition: border-color 0.15s;
-}
-.chunky-input:focus {
-  border-color: var(--blue);
-  border-bottom-color: var(--blue-dark);
-  background: var(--white);
-}
-
-/* Role Cards Grid */
+/* Cuadrícula de Roles */
 .roles-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-/* On desktop welcome screen, put them side by side */
-@media (min-width: 480px) {
-  .roles-grid { flex-direction: row; }
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 24px;
 }
 
 .role-card {
-  display: flex;
-  align-items: center;
-  text-align: left;
-  flex: 1;
-  padding: 16px;
-  border-radius: 18px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 5px solid var(--ink-100);
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.12s var(--ease-out);
-  gap: 14px;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    padding: 18px;
+    border-radius: 20px;
+    border: 2px solid;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
 }
-.role-card:active  { border-bottom-width: 1px; transform: translateY(4px); }
 
-.card-passenger:hover { border-color: var(--blue);  border-bottom-color: var(--blue-dark); background: #f0faff; }
-.card-vehicle:hover   { border-color: var(--green); border-bottom-color: var(--green-dark); background: #f3fde8; }
-.card-passenger { color: var(--blue); }
-.card-vehicle   { color: var(--green); }
+.role-card.card-passenger {
+    border-color: var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    color: var(--duo-blue);
+}
+
+.role-card.card-passenger:hover {
+    background-color: #f2faff;
+    border-color: var(--duo-blue);
+    border-bottom-color: var(--duo-blue-dark);
+}
+
+.role-card.card-vehicle {
+    border-color: var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    color: var(--duo-green);
+}
+
+.role-card.card-vehicle:hover {
+    background-color: #f3fcf0;
+    border-color: var(--duo-green);
+    border-bottom-color: var(--duo-green-dark);
+}
+
+.role-card:active {
+    border-bottom-width: 1px;
+    transform: translateY(4px);
+}
 
 .role-icon-wrapper {
-  width: 48px; height: 48px;
-  border-radius: 13px;
-  background: currentColor;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--white);
-  flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background-color: currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    margin-right: 16px;
 }
-.role-info { flex: 1; }
+
+.role-info {
+    flex-grow: 1;
+    padding-right: 8px;
+}
+
 .role-info h3 {
-  font-family: var(--font-head);
-  font-size: 15px; font-weight: 800;
-  color: var(--ink-700);
-  margin-bottom: 2px;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    color: var(--text-dark);
 }
-.role-info p { font-size: 11px; color: var(--ink-500); line-height: 1.4; }
 
-.card-arrow { color: var(--ink-300); transition: transform 0.2s; flex-shrink: 0; }
-.role-card:hover .card-arrow { transform: translateX(4px); color: var(--ink-500); }
+.role-info p {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.4;
+}
 
-.footer-note { font-size: 11px; color: var(--ink-300); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+.card-arrow {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
 
-/* ─────────────────────────── APP SHELL LAYOUT ─────────────────────────── */
+.role-card:hover .card-arrow {
+    transform: translateX(4px);
+    color: var(--text-dark);
+}
+
+.footer-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ================= 2. INTERFAZ PRINCIPAL (APP SCREEN) ================= */
 .app-screen {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  height: -webkit-fill-available;
-  width: 100%;
-  overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
 }
 
-/* ──── HEADER ────────────────────────────────────────────────────────────── */
+/* Header Superior */
 .app-header {
-  background: var(--white);
-  border-bottom: 1.5px solid var(--ink-100);
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--header-h);
-  flex-shrink: 0;
-  z-index: 990;
-  box-shadow: var(--shadow-sm);
+    background-color: #ffffff;
+    border-bottom: 2px solid var(--border-light);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    flex-shrink: 0;
+    z-index: 990;
 }
 
 .header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .mini-logo {
-  width: 30px; height: 30px;
-  border-radius: 9px;
-  background: var(--green);
-  display: flex; align-items: center; justify-content: center;
-  border-bottom: 3px solid var(--green-dark);
-  flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background-color: var(--duo-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 3px solid var(--duo-green-dark);
 }
+
 .logo-circle {
-  font-family: var(--font-head);
-  color: var(--white);
-  font-weight: 800;
-  font-size: 18px;
-  line-height: 1;
+    font-family: var(--font-heading);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 18px;
+    margin-top: -2px;
 }
+
 .logo-text {
-  font-family: var(--font-head);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--green);
-  letter-spacing: -0.8px;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--duo-green);
+    letter-spacing: -0.8px;
 }
 
-/* Badges */
 .badge {
-  font-size: 10px;
-  font-weight: 800;
-  font-family: var(--font-head);
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 8px;
-  letter-spacing: 0.4px;
-  border: 1.5px solid;
-  white-space: nowrap;
+    font-size: 11px;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    border: 1.5px solid;
 }
-.badge-passenger   { background: #e8f7fe; color: var(--blue);        border-color: #b3e5fc; }
-.badge-vehicle     { background: #f1fcf0; color: var(--green);       border-color: #c6efbe; }
-.badge-conn-connecting { background: #fff8e5; color: var(--orange);  border-color: #fde8a0; }
-.badge-conn-connected  { background: #f1fcf0; color: var(--green);   border-color: #c6efbe; }
-.badge-conn-offline    { background: #fff5f5; color: var(--red);     border-color: #ffd0d0; }
 
-/* ──── CHIPS SCROLL BAR ─────────────────────────────────────────────────── */
-.chips-container-wrapper {
-  background: var(--white);
-  border-bottom: 1.5px solid var(--ink-100);
-  padding: 8px 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-shrink: 0;
-  z-index: 980;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+.badge-passenger {
+    background-color: #e8f7fe;
+    color: var(--duo-blue);
+    border-color: #b0e5fc;
 }
-.chips-container-wrapper::-webkit-scrollbar { display: none; }
+
+.badge-vehicle {
+    background-color: #f1fcf0;
+    color: var(--duo-green);
+    border-color: #c6f0be;
+}
+
+.badge-conn-connecting {
+    background-color: #fff9eb;
+    color: var(--duo-orange);
+    border-color: #ffe6b3;
+}
+
+.badge-conn-connected {
+    background-color: #f1fcf0;
+    color: var(--duo-green);
+    border-color: #c6f0be;
+}
+
+.badge-conn-offline {
+    background-color: #fff5f5;
+    color: var(--duo-red);
+    border-color: #ffcccc;
+}
+
+/* Banner de otras líneas con conductores activos */
+.other-lines-banner {
+    background-color: #fff9eb;
+    border-color: #ffe6b3 !important;
+    box-shadow: 0 4px 0 #ffd699 !important;
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    border-radius: 16px;
+    border: 2px solid;
+    align-items: center;
+}
+
+.banner-avatar {
+    font-size: 24px;
+}
+
+.banner-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-grow: 1;
+}
+
+.banner-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--duo-orange-dark);
+    font-size: 14px;
+    margin: 0;
+}
+
+.other-lines-chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.other-line-chip-btn {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #ffffff;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    user-select: none;
+}
+
+.other-line-chip-btn:active {
+    transform: translateY(2px);
+    box-shadow: none !important;
+}
+
+/* ================= 3. CONTENEDOR DE CHIPS (METRO CDMX) ================= */
+.chips-container-wrapper {
+    background-color: #ffffff;
+    border-bottom: 2px solid var(--border-light);
+    padding: 10px 0;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    flex-shrink: 0;
+    z-index: 980;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    /* Ocultar scrollbar en mobile para look más limpio */
+    scrollbar-width: none;
+}
+
+.chips-container-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* Gradiente lateral para indicar que hay más chips al hacer scroll */
+.chips-container-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 36px;
+    background: linear-gradient(to right, transparent, #ffffff);
+    pointer-events: none;
+    z-index: 1;
+}
 
 .chips-container {
-  display: inline-flex;
-  gap: 8px;
-  padding: 0 16px;
+    display: inline-flex;
+    gap: 10px;
+    padding: 0 20px;
 }
 
 .line-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
-  border-radius: 12px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 3px solid var(--ink-100);
-  background: var(--white);
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.1s;
-  white-space: nowrap;
-  user-select: none;
-  color: var(--ink-700);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 14px;
+    border: 2px solid var(--border-light);
+    border-bottom: 4px solid var(--border-light);
+    background-color: #ffffff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    user-select: none;
 }
-.line-chip:hover  { background: var(--surface-1); }
-.line-chip:active { border-bottom-width: 1px; transform: translateY(2px); }
-.line-chip.active {
-  background: var(--white);
-  border-bottom-width: 3px;
+
+.line-chip:active {
+    border-bottom-width: 1px;
+    transform: translateY(3px);
 }
 
 .chip-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
-/* ALL lines chip */
-.line-chip[data-line="ALL"] { color: var(--ink-700); }
-.line-chip[data-line="ALL"] .chip-dot {
-  background: conic-gradient(#f070a1,#005f9e,#58cc02,#ff9600,#1cb0f6,#f070a1);
-}
-.line-chip[data-line="ALL"].active {
-  background: linear-gradient(135deg, #58cc02, #1cb0f6);
-  color: var(--white) !important;
-  border-color: var(--green-dark) !important;
-  box-shadow: 0 3px 0 var(--blue-dark) !important;
-}
-.line-chip[data-line="ALL"].active .chip-dot {
-  border: 1.5px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.5);
+/* Estados activos de los Chips — color sólido gestionado por JS */
+.line-chip.active {
+    color: #ffffff;
 }
 
-/* ──── MAIN CONTENT AREA (Map + Sidebar) ────────────────────────────────── */
-.main-content {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  position: relative;
-}
-
-/* ──── MAP ───────────────────────────────────────────────────────────────── */
+/* ================= 4. MAPA INTERACTIVO ================= */
 .map-wrapper {
-  flex: 1;
-  position: relative;
-  z-index: 10;
-  min-width: 0;
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+    z-index: 10;
 }
 
 #map {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
-/* Leaflet control overrides */
+/* Reajustar controles del mapa Leaflet a diseño iOS elegante */
 .leaflet-control-zoom {
-  border: 2px solid var(--ink-100) !important;
-  border-bottom-width: 4px !important;
-  border-radius: 14px !important;
-  overflow: hidden;
-  box-shadow: var(--shadow-md) !important;
-  right: 12px;
-  bottom: 12px;
-}
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out {
-  border: none !important;
-  background: var(--white) !important;
-  color: var(--ink-700) !important;
-  font-family: var(--font-head) !important;
-  font-weight: 700 !important;
-  width: 36px !important;
-  height: 36px !important;
-  line-height: 36px !important;
-  font-size: 18px !important;
-}
-.leaflet-control-zoom-in { border-bottom: 1.5px solid var(--ink-100) !important; }
-.leaflet-bar { border: none !important; }
-.leaflet-control-attribution {
-  font-size: 9px !important;
-  background: rgba(255,255,255,0.85) !important;
-  backdrop-filter: blur(6px);
-  border-top-left-radius: 8px;
-  color: var(--ink-500) !important;
+    border: 2px solid var(--border-light) !important;
+    border-bottom-width: 4px !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    box-shadow: var(--ios-shadow) !important;
 }
 
-/* Floating Map Controls */
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+    border: none !important;
+    background-color: #ffffff !important;
+    color: var(--text-dark) !important;
+    font-family: var(--font-heading) !important;
+    font-weight: 700 !important;
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 38px !important;
+}
+
+.leaflet-control-zoom-in {
+    border-bottom: 2px solid var(--border-light) !important;
+}
+
+.leaflet-bar {
+    border: none !important;
+}
+
+.leaflet-control-attribution {
+    font-size: 9px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(4px);
+    border-top-left-radius: 8px;
+    color: var(--text-light) !important;
+}
+
+/* Botones flotantes (iOS Style) */
 .floating-controls {
-  position: absolute;
-  bottom: 16px;
-  right: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 400;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 400; /* Por encima de Leaflet */
 }
 
 .fab-btn {
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  background: var(--white);
-  border: 2px solid var(--ink-100);
-  border-bottom: 4px solid var(--ink-100);
-  color: var(--ink-700);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.1s;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 2px solid var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--ios-shadow);
+    transition: all 0.1s ease;
 }
-.fab-btn:hover  { background: var(--surface-1); }
-.fab-btn:active { border-bottom-width: 1px; transform: translateY(3px); }
-.fab-btn.hidden { display: none !important; }
 
-/* Sync Toast */
+.fab-btn:active {
+    border-bottom-width: 1px;
+    transform: translateY(4px);
+}
+
+.fab-btn.hidden {
+    display: none !important;
+}
+
+/* Indicador de sincronización flotante */
 .sync-toast {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(10px);
-  border: 1.5px solid var(--ink-100);
-  padding: 7px 14px;
-  border-radius: 20px;
-  box-shadow: var(--shadow-md);
-  z-index: 400;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 11px;
-  animation: slideDownFade 0.3s var(--ease-spring);
-  white-space: nowrap;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--border-light);
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: var(--ios-shadow);
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 12px;
+    backdrop-filter: blur(8px);
+    animation: slideDownFade 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.sync-toast.hidden { display: none !important; }
 
-.toast-dot { width: 7px; height: 7px; border-radius: 50%; }
+.sync-toast.hidden {
+    display: none !important;
+}
 
-/* Pulse animations */
+.toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
 .pulsing-green {
-  background: var(--green);
-  box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.6);
-  animation: pulse 1.6s infinite;
-}
-.pulsing-red {
-  background: var(--red);
-  box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.6);
-  animation: pulse 1.6s infinite;
+    background-color: var(--duo-green);
+    box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.7);
+    animation: markerPulse 1.5s infinite;
 }
 
-/* ──── BOTTOM SHEET (MOBILE) / SIDEBAR (DESKTOP) ────────────────────────── */
+.pulsing-red {
+    background-color: var(--duo-red);
+    box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7);
+    animation: markerPulse 1.5s infinite;
+}
+
+/* ================= 5. HOJA INFERIOR (BOTTOM SHEET / DASHBOARDS) ================= */
 .bottom-sheet {
-  background: var(--white);
-  border-top: 1.5px solid var(--ink-100);
-  border-top-left-radius: 22px;
-  border-top-right-radius: 22px;
-  padding: 12px 16px 20px;
-  box-shadow: 0 -6px 24px rgba(0,0,0,0.06);
-  z-index: 970;
-  flex-shrink: 0;
-  overflow-y: auto;
-  max-height: 55vh;
-  -webkit-overflow-scrolling: touch;
+    background-color: #ffffff;
+    border-top: 2px solid var(--border-light);
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    padding: 16px 20px 24px 20px;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.08);
+    z-index: 970;
+    position: relative;
+    flex-shrink: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 44vh;
+    /* Ocultar scrollbar en mobile */
+    scrollbar-width: none;
+}
+
+.bottom-sheet::-webkit-scrollbar {
+    display: none;
 }
 
 .sheet-drag-handle {
-  width: 36px; height: 4px;
-  background: var(--ink-100);
-  border-radius: 99px;
-  margin: 0 auto 12px;
+    width: 40px;
+    height: 5px;
+    background-color: var(--border-light);
+    border-radius: 10px;
+    margin: 0 auto 16px auto;
 }
 
-.sheet-content { display: none; }
+.sheet-content {
+    display: none;
+}
+
 .sheet-content.active {
-  display: block;
-  animation: fadeInUp 0.25s var(--ease-out);
+    display: block;
+    animation: fadeInUp 0.3s ease-out;
 }
 
-/* Sheet Header */
+/* Encabezado del Bottom Sheet */
 .sheet-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
 }
+
 .status-avatar {
-  width: 46px; height: 46px;
-  border-radius: 13px;
-  background: var(--surface-1);
-  border: 2px solid var(--ink-100);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background-color: #f7f7f7;
+    border: 2px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    position: relative;
 }
-.avatar-train-pulse { animation: heartbeat 2s infinite ease-in-out; }
+
+.avatar-train-pulse {
+    animation: heartbeat 2s infinite ease-in-out;
+}
 
 .status-details h4 {
-  font-family: var(--font-head);
-  font-size: 16px; font-weight: 800;
-  color: var(--ink-700);
-  margin-bottom: 2px;
-}
-.status-details p {
-  font-size: 12px;
-  color: var(--ink-500);
-  line-height: 1.4;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 2px;
 }
 
-/* ──── INFO CARDS ────────────────────────────────────────────────────────── */
-.info-card-chunky {
-  display: flex;
-  background: var(--white);
-  border: 2px solid var(--ink-100);
-  border-bottom: 4px solid var(--ink-100);
-  border-radius: 16px;
-  padding: 14px;
-  margin-top: 12px;
-  align-items: center;
-  gap: 14px;
-  animation: popIn 0.3s var(--ease-spring);
+.status-details p {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.4;
 }
-.info-card-chunky.hidden { display: none !important; }
+
+/* Tarjeta Chunky de Información (Estilo Duolingo) */
+.info-card-chunky {
+    display: flex;
+    background-color: #ffffff;
+    border: 2px solid var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    border-radius: 20px;
+    padding: 16px;
+    margin-top: 16px;
+    align-items: center;
+    gap: 16px;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+.info-card-chunky.hidden {
+    display: none !important;
+}
 
 .card-line-badge {
-  width: 42px; height: 42px;
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head);
-  font-weight: 800;
-  color: var(--white);
-  font-size: 14px;
-  flex-shrink: 0;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: #ffffff;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
 }
 
 .card-route-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .route-stations {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--ink-700);
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-dark);
 }
-.station-name       { color: var(--ink-500); }
-.station-name.bold  { font-weight: 700; color: var(--ink-700); }
-.route-arrow        { color: var(--ink-300); font-size: 11px; }
 
-/* Duolingo progress bar */
+.station-name {
+    color: var(--text-light);
+}
+
+.station-name.bold {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.route-arrow {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Barra de progreso interactiva (Duolingo Style) */
 .duo-progress-bar-container {
-  height: 10px;
-  background: var(--ink-100);
-  border-radius: 99px;
-  width: 100%;
-  overflow: hidden;
+    height: 12px;
+    background-color: var(--border-light);
+    border-radius: 10px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
 }
+
 .duo-progress-bar-fill {
-  height: 100%;
-  background: var(--green);
-  border-radius: 99px;
-  width: 0%;
-  transition: width 0.8s linear;
-  position: relative;
+    height: 100%;
+    background-color: var(--duo-green);
+    border-radius: 10px;
+    width: 0%;
+    transition: width 1s linear;
+    position: relative;
 }
+
+/* Efecto de luz reflectiva de la barra Duolingo */
 .duo-progress-bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 2px; left: 4px; right: 4px;
-  height: 3px;
-  background: rgba(255,255,255,0.35);
-  border-radius: 99px;
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    right: 4px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
 }
 
 .route-meta {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--duo-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* ──── ALL SUMMARY CARD ──────────────────────────────────────────────────── */
-.all-summary-card {
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 10px;
-}
-
-.summary-header-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1.5px solid var(--ink-100);
-}
-.summary-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.summary-title {
-  font-family: var(--font-head);
-  font-weight: 800;
-  color: var(--ink-700);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin: 0;
-}
-
-.all-summary-trains-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  max-height: 160px;
-  overflow-y: auto;
-}
-
-.summary-train-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 2px solid var(--ink-100);
-  border-bottom-width: 3px;
-  background: var(--white);
-  cursor: pointer;
-  transition: transform 0.08s, border-bottom-width 0.08s;
-  user-select: none;
-}
-.summary-train-item:hover  { background: var(--surface-1); }
-.summary-train-item:active { transform: translateY(2px); border-bottom-width: 1px; }
-
-.summary-train-badge {
-  width: 30px; height: 30px;
-  font-size: 11px; font-weight: 800;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--white);
-  flex-shrink: 0;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.15);
-}
-
-.summary-train-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-.summary-train-route {
-  font-size: 11px; font-weight: 700;
-  color: var(--ink-700);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.summary-train-route span { font-weight: 400; color: var(--ink-500); }
-.summary-train-eta {
-  font-size: 9px; font-weight: 700;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.summary-focus-btn { flex-shrink: 0; min-width: 64px; }
-
-/* Empty state */
-.summary-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 18px 12px;
-  text-align: center;
-  background: var(--surface-1);
-  border-radius: 12px;
-  border: 1.5px dashed var(--ink-100);
-}
-.empty-emoji  { font-size: 26px; animation: float 3s ease-in-out infinite; }
-.empty-title  { font-family: var(--font-head); font-weight: 800; font-size: 12px; color: var(--ink-700); }
-.empty-desc   { font-size: 10px; color: var(--ink-300); line-height: 1.4; }
-
-/* ──── OTHER LINES BANNER ────────────────────────────────────────────────── */
-.other-lines-banner {
-  background: #fff9e8;
-  border-color: #fde68a !important;
-  box-shadow: 0 3px 0 #fcd34d !important;
-  display: flex !important;
-  gap: 10px;
-  padding: 11px 14px;
-  align-items: center;
-  margin-top: 10px;
-}
-.banner-avatar { font-size: 22px; flex-shrink: 0; }
-.banner-content { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.banner-title { font-family: var(--font-head); font-weight: 800; color: var(--orange-dark); font-size: 12px; }
-.other-lines-chips-list { display: flex; flex-wrap: wrap; gap: 5px; }
-.other-line-chip-btn {
-  font-family: var(--font-head); font-weight: 800; font-size: 10px;
-  text-transform: uppercase; color: var(--white);
-  border: none; padding: 4px 10px; border-radius: 9px;
-  cursor: pointer; transition: transform 0.08s, box-shadow 0.08s;
-  user-select: none;
-}
-.other-line-chip-btn:active { transform: translateY(2px); box-shadow: none !important; }
-
-/* Demo hint */
 .passenger-demo-hint {
-  margin-top: 12px; padding: 9px 12px;
-  background: var(--surface-1); border-radius: 12px;
-  border: 1.5px dashed var(--ink-100);
-  font-size: 11px; color: var(--ink-500); line-height: 1.4; text-align: center;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background-color: #f7f7f7;
+    border-radius: 14px;
+    border: 1.5px dashed var(--border-light);
+    font-size: 11.5px;
+    color: var(--text-light);
+    line-height: 1.4;
+    text-align: center;
 }
 
-/* ──── DRIVER CONTROLS ───────────────────────────────────────────────────── */
+/* ================= CONTROLES DEL CONDUCTOR ================= */
 .driver-controls-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
-.control-box { display: flex; flex-direction: column; gap: 5px; }
+.control-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .control-label {
-  font-family: var(--font-head);
-  font-size: 11px; font-weight: 700;
-  color: var(--ink-500);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
 }
 
 .chunky-select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 4px solid var(--ink-100);
-  font-family: var(--font-body);
-  font-size: 14px; font-weight: 600;
-  color: var(--ink-700);
-  background: var(--surface-1);
-  cursor: pointer;
-  transition: border-color 0.1s;
-  appearance: auto;
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: 2px solid var(--border-light);
+    border-bottom: 4px solid var(--border-light);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    background-color: #ffffff;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.1s ease;
 }
-.chunky-select:focus { border-color: var(--blue); }
-.chunky-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chunky-select:focus {
+    border-color: var(--duo-blue);
+}
 
 .transmission-modes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
-.btn-toggle {
-  padding: 10px;
-  border-radius: 12px;
-  border: 2px solid var(--ink-100);
-  border-bottom: 3px solid var(--ink-100);
-  background: var(--white);
-  cursor: pointer;
-  font-family: var(--font-head);
-  font-weight: 700; font-size: 12px;
-  color: var(--ink-500);
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.1s;
-}
-.btn-toggle:active { border-bottom-width: 1px; transform: translateY(2px); }
-.btn-toggle.active {
-  border-color: var(--blue);
-  border-bottom-color: var(--blue-dark);
-  background: var(--blue-glow);
-  color: var(--blue);
-}
-.btn-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Settings Panel */
-.settings-panel {
-  background: var(--surface-1);
-  border-radius: 16px;
-  padding: 12px;
-  margin-bottom: 12px;
-  border: 1.5px solid var(--ink-100);
+.btn-toggle {
+    padding: 12px;
+    border-radius: 14px;
+    border: 2px solid var(--border-light);
+    border-bottom: 4px solid var(--border-light);
+    background-color: #ffffff;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
 }
-.settings-panel.hidden { display: none !important; }
+
+.btn-toggle:active {
+    border-bottom-width: 1px;
+    transform: translateY(3px);
+}
+
+.btn-toggle.active {
+    border-color: var(--duo-blue);
+    border-bottom-color: var(--duo-blue-dark);
+    background-color: #e8f7fe;
+    color: var(--duo-blue);
+}
+
+/* Configuraciones de Simulación */
+.settings-panel {
+    background-color: #f7f7f7;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 2px solid var(--border-light);
+}
+
+.settings-panel.hidden {
+    display: none !important;
+}
 
 .simulation-info-row {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
 }
+
 .sim-stat {
-  display: flex; flex-direction: column;
-  background: var(--white);
-  border: 1.5px solid var(--ink-100);
-  border-radius: 10px;
-  padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 1.5px solid var(--border-light);
+    border-radius: 12px;
+    padding: 10px;
 }
+
 .sim-stat-label {
-  font-size: 9px; color: var(--ink-300);
-  font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.3px; margin-bottom: 2px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
 }
+
 .sim-stat-value {
-  font-size: 12px; font-weight: 700;
-  color: var(--ink-700);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.speed-control-container { display: flex; flex-direction: column; gap: 5px; }
-.speed-chips { display: flex; gap: 6px; }
+/* Speed chips */
+.speed-control-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.speed-chips {
+    display: flex;
+    gap: 8px;
+}
+
 .speed-chip {
-  flex: 1; padding: 6px 2px;
-  border-radius: 8px;
-  border: 1.5px solid var(--ink-100);
-  border-bottom: 3px solid var(--ink-100);
-  background: var(--white);
-  font-family: var(--font-head); font-weight: 800; font-size: 11px;
-  color: var(--ink-300);
-  cursor: pointer; transition: all 0.08s;
-  text-align: center;
+    flex-grow: 1;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border-light);
+    border-bottom: 3.5px solid var(--border-light);
+    background-color: #ffffff;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.1s ease;
 }
-.speed-chip:active { border-bottom-width: 1px; transform: translateY(2px); }
+
+.speed-chip:active {
+    border-bottom-width: 1px;
+    transform: translateY(2.5px);
+}
+
 .speed-chip.active {
-  border-color: var(--orange); border-bottom-color: var(--orange-dark);
-  background: #fff6e5; color: var(--orange);
+    border-color: var(--duo-orange);
+    border-bottom-color: var(--duo-orange-dark);
+    background-color: #fff6e5;
+    color: var(--duo-orange);
 }
 
-/* GPS status */
+/* Configuración GPS */
 .gps-status-card {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--white);
-  border: 1.5px solid var(--ink-100);
-  padding: 10px 12px; border-radius: 10px;
-  margin-bottom: 8px;
-}
-.gps-indicator-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.gps-meta-info { display: flex; flex-direction: column; }
-.gps-status-text { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--ink-700); }
-.gps-coords-text { font-size: 10px; color: var(--ink-300); }
-.gps-disclaimer { font-size: 10px; color: var(--ink-500); text-align: center; line-height: 1.3; }
-
-/* Action button */
-.action-btn-wrapper { margin-top: 12px; }
-
-/* Background warning card */
-.bg-warning-card {
-  display: flex;
-  background: #fffbeb;
-  border: 2px solid var(--yellow);
-  border-bottom: 4px solid var(--yellow-dark);
-  border-radius: 13px;
-  padding: 10px 12px;
-  margin: 8px 0 12px;
-  align-items: flex-start;
-  gap: 10px;
-}
-.warning-emoji { font-size: 18px; line-height: 1; flex-shrink: 0; }
-.warning-text {
-  font-size: 11px; color: #92540a;
-  line-height: 1.4; margin: 0;
-  font-family: var(--font-body);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #ffffff;
+    border: 1.5px solid var(--border-light);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
 }
 
-/* ──── MAP MARKERS ───────────────────────────────────────────────────────── */
-.custom-user-marker { background: none; border: none; }
+.gps-indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.gps-meta-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.gps-status-text {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.gps-coords-text {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.gps-disclaimer {
+    font-size: 10.5px;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.3;
+}
+
+.action-btn-wrapper {
+    margin-top: 16px;
+}
+
+/* ================= 6. DISEÑO DE MARCADORES PERSONALIZADOS ================= */
+.custom-user-marker {
+    background: none;
+    border: none;
+}
+
 .user-gps-pulse {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--blue);
-  border: 3px solid var(--white);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--duo-blue);
+    border: 3px solid #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    position: relative;
 }
+
 .user-gps-pulse::after {
-  content: '';
-  position: absolute;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(28, 176, 246, 0.35);
-  top: -9px; left: -9px;
-  animation: markerPulse 2s infinite ease-out;
-  z-index: -1;
+    content: '';
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(28, 176, 246, 0.4);
+    top: -9px;
+    left: -9px;
+    animation: markerPulse 2s infinite ease-out;
+    z-index: -1;
 }
 
-.custom-train-marker { background: none; border: none; }
+/* Marcador del tren (Conductor) */
+.custom-train-marker {
+    background: none;
+    border: none;
+}
+
 .train-marker-pin {
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  background: currentColor;
-  border: 3px solid var(--white);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  font-size: 17px;
-  position: relative;
-  transition: transform 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background-color: currentColor; /* Tomará el color de la línea */
+    border: 3px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 18px;
+    position: relative;
+    transition: transform 0.2s ease-out;
 }
+
 .train-marker-pin::after {
-  content: '';
-  position: absolute;
-  bottom: -5px; left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid var(--white);
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #ffffff;
 }
+
 .train-marker-pin::before {
-  content: '';
-  position: absolute;
-  width: 46px; height: 46px;
-  border-radius: 14px;
-  background: currentColor;
-  opacity: 0.2;
-  top: -9px; left: -9px;
-  animation: markerPulse 1.8s infinite ease-out;
-  z-index: -1;
+    content: '';
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background-color: currentColor;
+    opacity: 0.25;
+    top: -9px;
+    left: -9px;
+    animation: markerPulse 1.8s infinite ease-out;
+    z-index: -1;
 }
 
-/* Leaflet tooltip */
-.custom-leaflet-tooltip {
-  background: var(--white) !important;
-  border: 1.5px solid var(--ink-100) !important;
-  border-radius: 8px !important;
-  font-family: var(--font-head) !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: var(--ink-700) !important;
-  padding: 4px 8px !important;
-  box-shadow: var(--shadow-md) !important;
+/* ================= 7. ANIMACIONES CLAVE ================= */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(30px);
+    }
+    70% {
+        transform: scale(1.03) translateY(-4px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
-/* ──── ANIMATIONS ────────────────────────────────────────────────────────── */
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.88) translateY(24px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0); }
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-7px); }
-}
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to   { opacity: 1; transform: scale(1); }
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
+
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
+
 @keyframes slideDownFade {
-  from { opacity: 0; transform: translate(-50%, -16px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+    0% {
+        transform: translate(-50%, -20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
 }
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0   currentColor; }
-  70%  { box-shadow: 0 0 0 6px transparent; }
-  100% { box-shadow: 0 0 0 0   transparent; }
+
+@keyframes hoverMascot {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
 }
+
 @keyframes markerPulse {
-  from { transform: scale(0.5); opacity: 1; }
-  to   { transform: scale(1.7); opacity: 0; }
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
 }
+
 @keyframes heartbeat {
-  0%,100% { transform: scale(1); }
-  50%      { transform: scale(1.12); }
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.12);
+    }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/* ── SMALL PHONES (< 380px) ─────────────────────────────────────────────── */
-@media (max-width: 379px) {
-  .app-title-huge { font-size: 32px; }
-  .selector-modal { padding: 20px 16px; }
-  .logo-text { font-size: 18px; }
-  .badge { font-size: 9px; padding: 2px 6px; }
-  .btn-chunky.btn-small { font-size: 10px; padding: 7px 12px; }
-  .roles-grid { flex-direction: column; }
+/* ================= 6. CÓDIGO DE GRUPO Y ESTILOS DE ENTRADA ================= */
+.group-code-wrapper {
+    width: 100%;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
-/* ── TABLETS (≥ 768px) ──────────────────────────────────────────────────── */
-@media (min-width: 768px) {
-  :root {
-    --header-h: 62px;
-    --sheet-mobile: unset;
-  }
+.group-code-label {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.2px;
+}
 
-  /* Two-pane layout: map left, panel right */
-  .main-content {
-    flex-direction: row;
-  }
+.group-code-input-container {
+    width: 100%;
+    max-width: 280px;
+}
 
-  .map-wrapper {
-    flex: 1;
-    height: 100%;
-  }
+.chunky-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    border: 2px solid var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--text-dark);
+    text-align: center;
+    text-transform: uppercase;
+    outline: none;
+    transition: all 0.1s ease;
+    background-color: #ffffff;
+}
 
-  /* Convert bottom sheet → fixed right sidebar */
-  .bottom-sheet {
-    width: var(--sidebar-w);
-    max-height: none;
-    height: 100%;
-    border-top: none;
-    border-left: 1.5px solid var(--ink-100);
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-left-radius: 0;
-    border-radius: 0;
-    padding: 20px 20px 24px;
-    overflow-y: auto;
-    box-shadow: -4px 0 24px rgba(0,0,0,0.05);
+.chunky-input:focus {
+    border-color: var(--duo-blue);
+    border-bottom-color: var(--duo-blue-dark);
+}
+
+/* ================= 8. ESTILOS DE VISUALIZACIÓN UNIFICADA DE CONDUCTORES ================= */
+
+/* Chip Especial "Todas las Líneas" */
+.line-chip[data-line="ALL"] {
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border-color: var(--border-light);
+}
+
+.line-chip[data-line="ALL"] .chip-dot {
+    background: linear-gradient(45deg, #f070a1, #005f9e, #af9b1e, #55c4c4, #fcd116, #d01c1f, #f37021, #008d64);
+}
+
+.line-chip[data-line="ALL"].active {
+    background: linear-gradient(135deg, #58cc02, #1cb0f6);
+    color: #ffffff !important;
+    border-color: #46a302 !important;
+    box-shadow: 0 4px 0 #1899d6 !important;
+}
+
+.line-chip[data-line="ALL"].active .chip-dot {
+    border: 1.5px solid #ffffff;
+}
+
+/* Tarjeta y Listado de Resumen de Conductores (Red Completa) */
+.all-summary-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.summary-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--border-light);
+}
+
+.summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
     flex-shrink: 0;
-  }
-
-  .sheet-drag-handle { display: none; }
-
-  /* Wider chips bar */
-  .chips-container { padding: 0 20px; gap: 10px; }
-  .line-chip { padding: 8px 16px; font-size: 13px; }
-
-  /* Roles side-by-side on welcome screen */
-  .roles-grid { flex-direction: row; }
-
-  /* Taller summary list */
-  .all-summary-trains-list { max-height: 280px; }
-
-  /* Floating controls a bit higher (above sidebar edge) */
-  .floating-controls { bottom: 20px; right: 16px; }
-
-  /* Bigger status avatar */
-  .status-avatar { width: 52px; height: 52px; font-size: 24px; }
-  .status-details h4 { font-size: 17px; }
-  .status-details p  { font-size: 13px; }
-
-  /* Driver grid — 2 cols on tablet */
-  .driver-controls-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* ── DESKTOP (≥ 1100px) ─────────────────────────────────────────────────── */
-@media (min-width: 1100px) {
-  :root { --sidebar-w: 400px; }
-
-  .app-header { padding: 0 24px; height: 64px; }
-  .logo-text  { font-size: 24px; }
-
-  /* Wider chip scrollbar */
-  .chips-container-wrapper { padding: 10px 0; }
-  .chips-container { padding: 0 24px; gap: 12px; }
-  .line-chip { padding: 9px 18px; font-size: 13px; border-radius: 13px; }
-
-  /* Larger action button */
-  .btn-chunky.btn-full { padding: 15px; font-size: 15px; }
-
-  /* Bigger sim stats */
-  .sim-stat-value { font-size: 13px; }
-
-  /* Larger summary list */
-  .all-summary-trains-list { max-height: 320px; }
-
-  /* Driver grid stays 2 cols */
-  .driver-controls-grid { grid-template-columns: 1fr 1fr; }
+.summary-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--text-dark);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
 }
 
-/* ── LARGE DESKTOP (≥ 1440px) ───────────────────────────────────────────── */
-@media (min-width: 1440px) {
-  :root { --sidebar-w: 440px; }
-  .selector-modal { max-width: 500px; }
-}
-
-/* ── LANDSCAPE PHONES ───────────────────────────────────────────────────── */
-@media (max-height: 500px) and (orientation: landscape) {
-  .bottom-sheet {
-    max-height: 90vh;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-radius: 0;
-    border-top: none;
-    border-left: 1.5px solid var(--ink-100);
-    width: 300px;
-    height: 100%;
-    max-height: none;
+.all-summary-trains-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-height: 180px;
     overflow-y: auto;
-  }
-  .main-content { flex-direction: row; }
-  .sheet-drag-handle { display: none; }
-  .map-wrapper { flex: 1; height: 100%; }
+    padding-right: 4px;
 }
 
-/* ── SAFE AREAS (iPhone notch / Dynamic Island) ─────────────────────────── */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .app-header {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-  }
-  .bottom-sheet {
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
-  .overlay-screen {
-    padding-top: max(20px, env(safe-area-inset-top));
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
+.summary-train-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 2px solid var(--border-light);
+    border-bottom-width: 4px;
+    background-color: #ffffff;
+    transition: transform 0.1s, border-bottom-width 0.1s;
+    user-select: none;
 }
 
-/* ── ACCESSIBILITY: Reduced Motion ─────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+.summary-train-item:active {
+    transform: translateY(2.5px);
+    border-bottom-width: 1.5px;
 }
 
-/* ── DARK MODE (System Preference) ─────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface-0:  #1a1a2e;
-    --surface-1:  #16213e;
-    --surface-2:  #0f3460;
-    --white:      #242438;
-    --ink-900:    #f0f0f0;
-    --ink-700:    #d0d0d8;
-    --ink-500:    #8888a0;
-    --ink-300:    #505068;
-    --ink-100:    #2e2e48;
-    --ink-50:     #1e1e32;
-  }
+.summary-train-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
 
-  body { background: var(--surface-1); }
+.summary-train-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 12px;
+    min-width: 0; /* Permite truncar texto */
+    text-align: left;
+}
 
-  .overlay-screen {
-    background: linear-gradient(160deg, #0d1f0a 0%, #0a1929 50%, #1a0f0d 100%);
-  }
+.summary-train-route {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-  .selector-modal,
-  .bottom-sheet,
-  .app-header,
-  .chips-container-wrapper {
-    background: var(--white);
-    border-color: var(--ink-100);
-  }
+.summary-train-route span {
+    font-weight: 400;
+    color: var(--text-light);
+}
 
-  .info-card-chunky,
-  .summary-train-item,
-  .sim-stat,
-  .gps-status-card,
-  .settings-panel {
-    background: var(--surface-1);
-    border-color: var(--ink-100);
-  }
+.summary-train-eta {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--duo-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
 
-  .line-chip {
-    background: var(--white);
-    border-color: var(--ink-100);
-    color: var(--ink-700);
-  }
-  .line-chip:hover { background: var(--surface-2); }
+.summary-focus-btn {
+    flex-shrink: 0;
+    min-width: 70px;
+}
 
-  .chunky-select,
-  .chunky-input {
-    background: var(--surface-2);
-    border-color: var(--ink-100);
-    color: var(--ink-700);
-  }
+/* Estado Vacío de Resumen (Sin Conductores) */
+.summary-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    text-align: center;
+    gap: 8px;
+    background-color: #fafafa;
+    border-radius: 14px;
+    border: 1.5px dashed var(--border-light);
+}
 
-  .btn-toggle { background: var(--surface-2); border-color: var(--ink-100); }
+.empty-emoji {
+    font-size: 28px;
+    animation: hoverMascot 3s ease-in-out infinite;
+}
 
-  .sync-toast {
-    background: rgba(26, 26, 46, 0.95);
-    border-color: var(--ink-100);
-    color: var(--ink-700);
-  }
+.empty-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin: 0;
+}
 
-  .fab-btn {
-    background: var(--white);
-    border-color: var(--ink-100);
-    color: var(--ink-700);
-  }
+.empty-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.35;
+    margin: 0;
+}
 
-  .passenger-demo-hint {
-    background: var(--surface-2);
-    border-color: var(--ink-100);
-  }
+/* ================= SOPORTE RESPONSIVO Y OPTIMIZACIONES ================= */
+@media (min-width: 768px) {
+    /* Pantalla dividida en pantallas de escritorio */
+    .app-screen {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .app-header {
+        width: 100%;
+    }
+    
+    .chips-container-wrapper {
+        width: 100%;
+    }
+    
+    .map-wrapper {
+        height: calc(100vh - 120px);
+        width: 60%;
+        flex-grow: 1;
+    }
+    
+    .bottom-sheet {
+        width: 380px;
+        height: calc(100vh - 120px);
+        border-top: none;
+        border-left: 2px solid var(--border-light);
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding: 24px;
+        overflow-y: auto;
+    }
+    
+    .sheet-drag-handle {
+        display: none;
+    }
+    
+    .roles-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
-  .summary-empty-state { background: var(--surface-2); }
+/* Tarjeta de advertencia de segundo plano */
+.bg-warning-card {
+    display: flex;
+    background-color: #fffaf0;
+    border: 2px solid #ffc800;
+    border-bottom: 5px solid #e0af00;
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin: 10px 0 16px 0;
+    align-items: flex-start;
+    gap: 12px;
+}
 
-  .bg-warning-card {
-    background: #2a1f00;
-    border-color: #5c4400;
-  }
-  .warning-text { color: #fde68a; }
+.warning-emoji {
+    font-size: 20px;
+    line-height: 1;
+}
 
-  .other-lines-banner { background: #2a1e00; border-color: #5c4000 !important; }
-  .banner-title { color: #fcd34d; }
+.warning-text {
+    font-size: 11.5px;
+    color: #8c6000;
+    line-height: 1.4;
+    margin: 0;
+    font-family: var(--font-body);
+}
 
-  .role-card { background: var(--white); border-color: var(--ink-100); }
-  .card-passenger:hover { background: #0a1929; }
-  .card-vehicle:hover   { background: #0d1f0a; }
-  .role-info h3 { color: var(--ink-700); }
+/* ==========================================================================
+   RESPONSIVE MÓVIL — ÁREAS SEGURAS Y OPTIMIZACIONES
+   ========================================================================== */
+
+/* 1. Safe Areas — iPhone notch, Dynamic Island y home indicator */
+.app-header {
+    padding-top: max(12px, calc(10px + env(safe-area-inset-top, 0px)));
+    min-height: 56px;
+    height: auto;
+}
+
+.bottom-sheet {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.overlay-screen {
+    padding-top: max(20px, calc(16px + env(safe-area-inset-top, 0px)));
+    padding-bottom: max(20px, calc(16px + env(safe-area-inset-bottom, 0px)));
+    padding-left: max(16px, calc(12px + env(safe-area-inset-left, 0px)));
+    padding-right: max(16px, calc(12px + env(safe-area-inset-right, 0px)));
+}
+
+/* 2. Mejoras generales para pantallas móviles (<768px) */
+@media (max-width: 767px) {
+    /* Header más compacto */
+    .app-header {
+        padding-left: 16px;
+        padding-right: 16px;
+        gap: 8px;
+    }
+
+    /* Tipografías compactas en los paneles */
+    .status-details h4 {
+        font-size: 16px;
+    }
+
+    .status-details p {
+        font-size: 12px;
+    }
+
+    .sheet-header {
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .status-avatar {
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+    }
+
+    /* Panel del conductor más compacto */
+    .driver-controls-grid {
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .settings-panel {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .bg-warning-card {
+        margin: 6px 0 10px 0;
+        padding: 10px 12px;
+    }
+
+    .warning-text {
+        font-size: 11px;
+    }
+
+    .action-btn-wrapper {
+        margin-top: 10px;
+    }
+
+    .passenger-demo-hint {
+        margin-top: 12px;
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    .all-summary-trains-list {
+        max-height: 130px;
+    }
+
+    .btn-chunky.btn-full {
+        padding: 13px 20px;
+        font-size: 14px;
+    }
+}
+
+/* 3. Teléfonos pequeños (iPhone SE, Galaxy A02, etc. ≤390px) */
+@media (max-width: 390px) {
+    /* Header: ocultar badge de conexión para ahorrar espacio */
+    #badge-conn {
+        display: none;
+    }
+
+    .logo-text {
+        font-size: 20px;
+    }
+
+    .btn-chunky.btn-small {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+
+    /* Modal de selección de rol más compacto */
+    .selector-modal {
+        padding: 24px 16px;
+        border-radius: 24px;
+    }
+
+    .app-title-huge {
+        font-size: 36px;
+    }
+
+    .welcome-text-container h2 {
+        font-size: 19px;
+    }
+
+    .role-card {
+        padding: 14px;
+    }
+
+    .role-icon-wrapper {
+        width: 48px;
+        height: 48px;
+    }
+
+    .role-info h3 {
+        font-size: 15px;
+    }
+}
+
+/* 4. Pantallas muy cortas (landscape en móvil, iPhone SE portrait en ≤680px) */
+@media (max-height: 680px) {
+    /* Modal scrollable desde arriba */
+    .overlay-screen {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .selector-modal {
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Mascota más pequeña */
+    .ruti-mascot {
+        width: 80px;
+        height: 80px;
+    }
+
+    .mascot-container {
+        margin-bottom: 6px;
+    }
+
+    .app-title-huge {
+        font-size: 32px;
+        margin-bottom: 2px;
+    }
+
+    .app-tagline {
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
+
+    .welcome-text-container {
+        margin-bottom: 14px;
+    }
+
+    .welcome-text-container h2 {
+        font-size: 18px;
+    }
+
+    .welcome-text-container p {
+        font-size: 13px;
+    }
+
+    .group-code-wrapper {
+        margin-bottom: 14px;
+    }
+
+    .chunky-input {
+        font-size: 16px;
+        padding: 10px 14px;
+    }
+
+    .roles-grid {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .role-card {
+        padding: 12px 14px;
+    }
+
+    .role-icon-wrapper {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Bottom sheet más pequeño en landscape */
+    .bottom-sheet {
+        max-height: 50vh;
+    }
+}
+
+/* 5. Desktop / Tablet — revertir max-height del bottom sheet (el sidebar lo maneja) */
+@media (min-width: 768px) {
+    .bottom-sheet {
+        max-height: none;
+        overflow-y: auto;
+        padding-bottom: 24px;
+    }
+
+    .chips-container-wrapper::after {
+        display: none;
+    }
+}
+
+/* 6. Tooltip de Leaflet — estilo más bonito en móvil */
+.custom-leaflet-tooltip {
+    background: #ffffff;
+    border: 2px solid var(--border-light) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-dark);
+    padding: 5px 10px !important;
+}
+
+.custom-leaflet-tooltip::before {
+    border-top-color: var(--border-light) !important;
+}
+
+/* ==========================================================================
+   ESTILO DUOLINGO — REDISEÑO COMPLETO DE ELEMENTOS
+   ========================================================================== */
+
+/* ---- Pantalla de Selección de Rol ---- */
+
+.overlay-screen {
+    background: linear-gradient(155deg, #f1fcf0 0%, #f7f7f7 50%, #f0f5ff 100%);
+}
+
+.selector-modal {
+    border-radius: 32px;
+    border-bottom-width: 8px;
+    padding: 36px 28px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+}
+
+.ruti-mascot {
+    width: 140px;
+    height: 140px;
+}
+
+.mascot-container {
+    margin-bottom: 16px;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
+}
+
+.app-title-huge {
+    font-size: 54px;
+    letter-spacing: -2.5px;
+    margin-bottom: 6px;
+}
+
+.app-tagline {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.welcome-text-container h2 {
+    font-size: 24px;
+}
+
+.welcome-text-container p {
+    font-size: 14px;
+}
+
+/* ---- Role cards: fondo colorido estilo Duolingo ---- */
+
+.role-card {
+    min-height: 88px;
+    padding: 18px 20px;
+    border-radius: 24px;
+    border-bottom-width: 6px;
+}
+
+/* Pasajero: azul Duolingo */
+.role-card.card-passenger {
+    background: linear-gradient(140deg, #28b5f5, #1cb0f6 55%, #0fa2e2);
+    border-color: #0d96d4;
+    border-bottom-color: #006fa3;
+    color: #ffffff;
+}
+
+.role-card.card-passenger:hover {
+    background: linear-gradient(140deg, #3abdf7, #28b5f5 55%, #1cb0f6);
+    border-color: #0d96d4;
+    border-bottom-color: #006fa3;
+}
+
+.role-card.card-passenger .role-icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.92);
+    color: var(--duo-blue);
+    border: none;
+}
+
+.role-card.card-passenger .role-info h3 { color: #ffffff; }
+.role-card.card-passenger .role-info p  { color: rgba(255,255,255,0.88); }
+.role-card.card-passenger .card-arrow   { color: rgba(255,255,255,0.7); }
+
+/* Conductor: verde Duolingo */
+.role-card.card-vehicle {
+    background: linear-gradient(140deg, #6ad60e, #58cc02 55%, #46a302);
+    border-color: #3ea300;
+    border-bottom-color: #2a6e00;
+    color: #ffffff;
+}
+
+.role-card.card-vehicle:hover {
+    background: linear-gradient(140deg, #78e014, #6ad60e 55%, #58cc02);
+    border-color: #3ea300;
+    border-bottom-color: #2a6e00;
+}
+
+.role-card.card-vehicle .role-icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.92);
+    color: var(--duo-green);
+    border: none;
+}
+
+.role-card.card-vehicle .role-info h3 { color: #ffffff; }
+.role-card.card-vehicle .role-info p  { color: rgba(255,255,255,0.9); }
+.role-card.card-vehicle .card-arrow   { color: rgba(255,255,255,0.7); }
+
+/* Icono centrado con color de la tarjeta */
+.role-icon-wrapper {
+    background-color: rgba(255,255,255,0.92);
+    border: none;
+}
+
+/* ---- Barra de chips: píldora con color sólido ---- */
+
+.line-chip {
+    border-radius: 50px;
+    font-weight: 800;
+    padding: 8px 18px;
+    font-size: 12px;
+    transition: all 0.15s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ---- Header ---- */
+
+.badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 10px;
+    border-width: 2px;
+    letter-spacing: 0.4px;
+}
+
+/* ---- Bottom Sheet ---- */
+
+.sheet-drag-handle {
+    width: 48px;
+    height: 6px;
+    background: #e0e0e0;
+    margin-bottom: 18px;
+    border-radius: 10px;
+}
+
+.status-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    font-size: 28px;
+    border-width: 2.5px;
+}
+
+.status-details h4 {
+    font-size: 19px;
+    font-weight: 800;
+}
+
+/* Info cards más gruesas y redondeadas */
+.info-card-chunky {
+    border-radius: 24px;
+    border-bottom-width: 6px;
+    padding: 18px;
+    gap: 14px;
+}
+
+.card-line-badge {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    font-size: 17px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
+}
+
+/* Barra de progreso más gruesa */
+.duo-progress-bar-container {
+    height: 16px;
+    border-radius: 12px;
+}
+
+.duo-progress-bar-fill {
+    border-radius: 12px;
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.duo-progress-bar-fill::after {
+    top: 3px;
+    height: 4px;
+    left: 5px;
+    right: 5px;
+}
+
+/* ---- Botones ---- */
+
+.btn-chunky.btn-primary {
+    font-size: 16px;
+    padding: 16px 28px;
+    border-radius: 18px;
+    border-bottom-width: 6px;
+    letter-spacing: 1px;
+}
+
+.btn-chunky.btn-secondary {
+    border-radius: 18px;
+}
+
+/* ---- Inputs y selects ---- */
+
+.chunky-input {
+    font-size: 20px;
+    padding: 13px 18px;
+    border-radius: 18px;
+    border-bottom-width: 6px;
+    font-weight: 800;
+}
+
+.chunky-select {
+    border-radius: 16px;
+    padding: 13px;
+    border-bottom-width: 5px;
+}
+
+/* ---- Panel del conductor ---- */
+
+.btn-toggle {
+    border-radius: 16px;
+    padding: 13px 10px;
+}
+
+.btn-toggle.active {
+    border-bottom-color: var(--duo-blue-dark);
+}
+
+.speed-chip {
+    border-radius: 12px;
+    padding: 8px 4px;
+    font-size: 13px;
+}
+
+.speed-chip.active {
+    border-bottom-color: var(--duo-orange-dark);
+}
+
+/* ---- Tarjetas de resumen ---- */
+
+.summary-train-item {
+    border-radius: 18px;
+    padding: 10px 14px;
+    border-bottom-width: 4px;
+}
+
+.summary-train-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+/* ---- Advertencia de fondo ---- */
+
+.bg-warning-card {
+    border-radius: 18px;
+    border-bottom-width: 5px;
+    padding: 13px 15px;
+}
+
+/* ---- FAB buttons del mapa ---- */
+
+.fab-btn {
+    width: 52px;
+    height: 52px;
+    border-bottom-width: 5px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+}
+
+/* ---- Sync toast ---- */
+
+.sync-toast {
+    border-radius: 24px;
+    padding: 9px 18px;
+    font-weight: 800;
+}
+
+/* ---- Other lines banner ---- */
+
+.other-lines-banner {
+    border-radius: 20px;
+    border-bottom-width: 5px;
+}
+
+.other-line-chip-btn {
+    border-radius: 14px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ---- GPS status ---- */
+
+.gps-status-card {
+    border-radius: 16px;
+    padding: 13px 14px;
+}
+
+/* ---- Hint del pasajero ---- */
+
+.passenger-demo-hint {
+    border-radius: 16px;
+    padding: 11px 14px;
+}
+
+/* ---- Footer note ---- */
+
+.footer-note {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+}
+
+/* ---- ALL chip activo (gradiente arcoíris → sólido verde) ---- */
+.line-chip[data-line="ALL"].active {
+    background: #58cc02;
+    color: #ffffff;
+    border-color: #358000;
+    box-shadow: 0 4px 0 #2c6a00;
 }
