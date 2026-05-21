@@ -344,10 +344,9 @@ const AppState = {
 
 const Telemetry = {
 
-    // ─── Configuración del endpoint (dejar en null para sólo guardar localmente) ───
-    // Para conectar con Supabase: 'https://TU_PROYECTO.supabase.co/rest/v1/ruti_events'
-    ENDPOINT: null,
-    API_KEY:  null,   // Supabase anon key o API key de tu backend
+    // ─── Configuración Supabase ───────────────────────────────────────────────────
+    ENDPOINT: 'https://owvqycupqtcerirfnxtm.supabase.co/rest/v1/ruti_events',
+    API_KEY:  'sb_publishable__oSpjLyfepXXGVzZwG8Iag___BOIsNI',  // anon key (segura en frontend)
 
     // ─── Estado interno ──────────────────────────────────────────────────────────
     enabled:      false,
@@ -448,17 +447,23 @@ const Telemetry = {
 
     _flush() {
         if (!this.ENDPOINT || this.eventQueue.length === 0) return;
-        const batch   = this.eventQueue.splice(0);
-        const headers = { 'Content-Type': 'application/json' };
-        if (this.API_KEY) headers['apikey'] = this.API_KEY;
+        const batch = this.eventQueue.splice(0);
+
+        // Supabase PostgREST requiere: apikey + Authorization Bearer + Prefer: return=minimal
+        const headers = {
+            'Content-Type':  'application/json',
+            'apikey':        this.API_KEY,
+            'Authorization': `Bearer ${this.API_KEY}`,
+            'Prefer':        'return=minimal'
+        };
 
         fetch(this.ENDPOINT, {
             method:    'POST',
             headers,
-            body:      JSON.stringify(batch),
+            body:      JSON.stringify(batch),   // Array → insert múltiple en Supabase
             keepalive: true
         }).catch(() => {
-            // Si falla, reencolar
+            // Si falla la red, reencolar para el próximo evento
             this.eventQueue.unshift(...batch);
         });
     },
