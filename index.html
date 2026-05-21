@@ -16,6 +16,9 @@
     
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- MQTT.js para comunicación en tiempo real a través de internet en diferentes dispositivos -->
+    <script src="https://unpkg.com/mqtt@5.3.0/dist/mqtt.min.js"></script>
 </head>
 <body class="light-theme">
     
@@ -60,6 +63,13 @@
             <div class="welcome-text-container">
                 <h2>¿Cómo vas a viajar hoy?</h2>
                 <p>Elige tu rol para comenzar a rastrear en tiempo real.</p>
+            </div>
+            
+            <div class="group-code-wrapper">
+                <label for="input-group-code" class="group-code-label">Código de Grupo (para sincronizar entre dispositivos)</label>
+                <div class="group-code-input-container">
+                    <input type="text" id="input-group-code" class="chunky-input" placeholder="Ej. CDMX" value="CDMX" maxlength="15">
+                </div>
             </div>
             
             <div class="roles-grid">

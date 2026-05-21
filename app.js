@@ -322,7 +322,12 @@ const AppState = {
     
     // Variables para el Pasajero (Usuario)
     activeVehicles: {},          // Diccionario de vehículos remotos activos: { id: { marker, data, lastUpdate } }
-    activeFocusVehicleId: null   // ID del vehículo enfocado
+    activeFocusVehicleId: null,  // ID del vehículo enfocado
+
+    // Variables de sincronización remota por Internet (MQTT)
+    groupCode: "CDMX",           // Código de grupo/sala para sincronizar
+    mqttClient: null,            // Cliente de MQTT
+    mqttTopic: ""                // Topic en el que se transmiten/escuchan datos
 };
 
 // ================= CANAL DE COMUNICACIÓN EN TIEMPO REAL =================
@@ -363,6 +368,73 @@ function broadcastMessage(packet) {
     
     // 2. Enviar por LocalStorage (Fallback y redundancia)
     localStorage.setItem('ruti_packet', JSON.stringify(packet));
+    
+    // 3. Enviar por Internet (MQTT) a otros dispositivos
+    if (AppState.mqttClient && AppState.mqttClient.connected) {
+        AppState.mqttClient.publish(AppState.mqttTopic, JSON.stringify(packet), { qos: 0, retain: false });
+    }
+}
+
+// ================= SISTEMA DE COMUNICACIÓN POR INTERNET (MQTT) =================
+function initMQTT() {
+    // Si ya existe un cliente activo, desconectarlo
+    if (AppState.mqttClient) {
+        try {
+            AppState.mqttClient.end();
+        } catch (e) {}
+    }
+    
+    // Obtener y sanitizar el código de grupo
+    let inputCode = document.getElementById('input-group-code').value.trim().toUpperCase();
+    if (!inputCode) inputCode = "CDMX";
+    AppState.groupCode = inputCode;
+    
+    // El topic será único para el grupo seleccionado
+    AppState.mqttTopic = `ruti/groups/${AppState.groupCode}/trains`;
+    
+    console.log(`Conectando a broker MQTT en el canal: ${AppState.mqttTopic}`);
+    
+    try {
+        // Conectar al broker EMQX público sobre puerto WSS (seguro para HTTPS)
+        AppState.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+            keepalive: 30,
+            clientId: 'ruti_' + Math.random().toString(16).substring(2, 8),
+            clean: true,
+            connectTimeout: 4000,
+            reconnectPeriod: 2000
+        });
+        
+        AppState.mqttClient.on('connect', () => {
+            console.log("¡Conexión exitosa al broker de internet MQTT!");
+            
+            // Suscribirse al topic
+            AppState.mqttClient.subscribe(AppState.mqttTopic, (err) => {
+                if (err) console.error("Error al suscribirse al topic:", err);
+                else console.log(`Suscrito con éxito a: ${AppState.mqttTopic}`);
+            });
+        });
+        
+        AppState.mqttClient.on('message', (topic, message) => {
+            if (topic === AppState.mqttTopic) {
+                try {
+                    const packet = JSON.parse(message.toString());
+                    // Evitar procesar nuestros propios paquetes si estamos transmitiendo en otra pestaña (filtrado por senderId)
+                    if (packet.senderId !== DRIVER_SESSION_ID) {
+                        handleIncomingMessage(packet);
+                    }
+                } catch (e) {
+                    console.error("Error al decodificar mensaje MQTT:", e);
+                }
+            }
+        });
+        
+        AppState.mqttClient.on('error', (err) => {
+            console.error("Error de conexión MQTT:", err);
+        });
+        
+    } catch (e) {
+        console.error("No se pudo iniciar el cliente MQTT:", e);
+    }
 }
 
 
@@ -585,6 +657,13 @@ function setAppRole(role) {
         document.getElementById('select-driver-line').value = AppState.selectedLine;
         AppState.driverSelectedLine = AppState.selectedLine;
         updateDriverPanelUI();
+    }
+    
+    // Iniciar sincronización remota por Internet (MQTT) si la librería está disponible
+    if (typeof mqtt !== 'undefined') {
+        initMQTT();
+    } else {
+        console.warn("Librería MQTT no cargada. La sincronización solo funcionará a nivel local.");
     }
     
     // Solicitar ubicación en tiempo real en segundo plano (iOS Style)

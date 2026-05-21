@@ -1120,6 +1120,51 @@ html {
     }
 }
 
+/* ================= 6. CÓDIGO DE GRUPO Y ESTILOS DE ENTRADA ================= */
+.group-code-wrapper {
+    width: 100%;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.group-code-label {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.2px;
+}
+
+.group-code-input-container {
+    width: 100%;
+    max-width: 280px;
+}
+
+.chunky-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    border: 2px solid var(--border-light);
+    border-bottom: 5px solid var(--border-light);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--text-dark);
+    text-align: center;
+    text-transform: uppercase;
+    outline: none;
+    transition: all 0.1s ease;
+    background-color: #ffffff;
+}
+
+.chunky-input:focus {
+    border-color: var(--duo-blue);
+    border-bottom-color: var(--duo-blue-dark);
+}
+
 /* ================= SOPORTE RESPONSIVO Y OPTIMIZACIONES ================= */
 @media (min-width: 768px) {
     /* Pantalla dividida en pantallas de escritorio */
