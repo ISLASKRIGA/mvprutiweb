@@ -1,0 +1,1177 @@
+/* ==========================================================================
+   RUTI - MOTOR LÓGICO DE LA APLICACIÓN (METRO CDMX EN TIEMPO REAL)
+   ========================================================================== */
+
+// 1. DICCIONARIO DE LAS 12 LÍNEAS DEL METRO DE LA CIUDAD DE MÉXICO
+// Contiene coordenadas geográficas reales de estaciones clave para trazar las rutas.
+const METRO_LINES = {
+    "L1": {
+        name: "Línea 1",
+        color: "#f070a1",
+        colorDark: "#d04f7c",
+        icon: "🚇",
+        stations: [
+            { name: "Observatorio", coords: [19.3982, -99.2003] },
+            { name: "Tacubaya", coords: [19.4032, -99.1873] },
+            { name: "Juanacatlán", coords: [19.4128, -99.1822] },
+            { name: "Chapultepec", coords: [19.4206, -99.1763] },
+            { name: "Sevilla", coords: [19.4219, -99.1706] },
+            { name: "Insurgentes", coords: [19.4233, -99.1630] },
+            { name: "Cuauhtémoc", coords: [19.4258, -99.1547] },
+            { name: "Balderas", coords: [19.4273, -99.1491] },
+            { name: "Salto del Agua", coords: [19.4270, -99.1423] },
+            { name: "Isabel la Católica", coords: [19.4266, -99.1378] },
+            { name: "Pino Suárez", coords: [19.4260, -99.1330] },
+            { name: "Merced", coords: [19.4256, -99.1250] },
+            { name: "Candelaria", coords: [19.4285, -99.1198] },
+            { name: "San Lázaro", coords: [19.4303, -99.1147] },
+            { name: "Moctezuma", coords: [19.4278, -99.1100] },
+            { name: "Balbuena", coords: [19.4246, -99.1022] },
+            { name: "Gómez Farías", coords: [19.4202, -99.0903] },
+            { name: "Zaragoza", coords: [19.4124, -99.0823] },
+            { name: "Pantitlán", coords: [19.4162, -99.0745] }
+        ]
+    },
+    "L2": {
+        name: "Línea 2",
+        color: "#005f9e",
+        colorDark: "#004b7e",
+        icon: "🚇",
+        stations: [
+            { name: "Cuatro Caminos", coords: [19.4596, -99.2158] },
+            { name: "Panteones", coords: [19.4586, -99.2030] },
+            { name: "Tacuba", coords: [19.4595, -99.1889] },
+            { name: "Cuitláhuac", coords: [19.4578, -99.1738] },
+            { name: "Popotla", coords: [19.4526, -99.1678] },
+            { name: "Colegio Militar", coords: [19.4492, -99.1627] },
+            { name: "Normal", coords: [19.4442, -99.1601] },
+            { name: "San Cosme", coords: [19.4418, -99.1539] },
+            { name: "Revolución", coords: [19.4373, -99.1524] },
+            { name: "Hidalgo", coords: [19.4372, -99.1472] },
+            { name: "Bellas Artes", coords: [19.4362, -99.1418] },
+            { name: "Allende", coords: [19.4357, -99.1373] },
+            { name: "Zócalo", coords: [19.4328, -99.1332] },
+            { name: "Pino Suárez", coords: [19.4260, -99.1330] },
+            { name: "San Antonio Abad", coords: [19.4188, -99.1341] },
+            { name: "Chabacano", coords: [19.4086, -99.1358] },
+            { name: "Viaducto", coords: [19.4009, -99.1368] },
+            { name: "Xola", coords: [19.3951, -99.1376] },
+            { name: "Villa de Cortés", coords: [19.3879, -99.1384] },
+            { name: "Nativitas", coords: [19.3795, -99.1393] },
+            { name: "Portales", coords: [19.3699, -99.1402] },
+            { name: "Ermita", coords: [19.3621, -99.1429] },
+            { name: "General Anaya", coords: [19.3533, -99.1449] },
+            { name: "Tasqueña", coords: [19.3442, -99.1426] }
+        ]
+    },
+    "L3": {
+        name: "Línea 3",
+        color: "#af9b1e",
+        colorDark: "#8f7f18",
+        icon: "🚇",
+        stations: [
+            { name: "Indios Verdes", coords: [19.4975, -99.1192] },
+            { name: "Deportivo 18 de Marzo", coords: [19.4839, -99.1243] },
+            { name: "Potrero", coords: [19.4772, -99.1278] },
+            { name: "La Raza", coords: [19.4697, -99.1358] },
+            { name: "Tlatelolco", coords: [19.4549, -99.1430] },
+            { name: "Guerrero", coords: [19.4449, -99.1447] },
+            { name: "Hidalgo", coords: [19.4372, -99.1472] },
+            { name: "Juárez", coords: [19.4332, -99.1478] },
+            { name: "Balderas", coords: [19.4273, -99.1491] },
+            { name: "Niños Héroes", coords: [19.4190, -99.1504] },
+            { name: "Hospital General", coords: [19.4137, -99.1524] },
+            { name: "Centro Médico", coords: [19.4069, -99.1547] },
+            { name: "Etiopía", coords: [19.3958, -99.1560] },
+            { name: "Eugenia", coords: [19.3857, -99.1578] },
+            { name: "División del Norte", coords: [19.3804, -99.1593] },
+            { name: "Zapata", coords: [19.3707, -99.1648] },
+            { name: "Coyoacán", coords: [19.3615, -99.1706] },
+            { name: "Viveros / D. H.", coords: [19.3541, -99.1762] },
+            { name: "M. A. de Quevedo", coords: [19.3461, -99.1802] },
+            { name: "Copilco", coords: [19.3359, -99.1822] },
+            { name: "Universidad", coords: [19.3243, -99.1739] }
+        ]
+    },
+    "L4": {
+        name: "Línea 4",
+        color: "#55c4c4",
+        colorDark: "#3b9e9e",
+        icon: "🚇",
+        stations: [
+            { name: "Martín Carrera", coords: [19.4851, -99.1044] },
+            { name: "Talismán", coords: [19.4741, -99.1075] },
+            { name: "Bondojito", coords: [19.4644, -99.1102] },
+            { name: "Consulado", coords: [19.4503, -99.1136] },
+            { name: "Canal del Norte", coords: [19.4414, -99.1147] },
+            { name: "Morelos", coords: [19.4378, -99.1144] },
+            { name: "Candelaria", coords: [19.4285, -99.1198] },
+            { name: "Fray Servando", coords: [19.4206, -99.1227] },
+            { name: "Jamaica", coords: [19.4089, -99.1219] },
+            { name: "Santa Anita", coords: [19.4026, -99.1206] }
+        ]
+    },
+    "L5": {
+        name: "Línea 5",
+        color: "#fcd116",
+        colorDark: "#cfa90f",
+        icon: "🚇",
+        stations: [
+            { name: "Politécnico", coords: [19.5009, -99.1488] },
+            { name: "Instituto del Petróleo", coords: [19.4897, -99.1428] },
+            { name: "Autobuses del Norte", coords: [19.4792, -99.1403] },
+            { name: "La Raza", coords: [19.4697, -99.1358] },
+            { name: "Misterios", coords: [19.4619, -99.1293] },
+            { name: "Valle Gómez", coords: [19.4578, -99.1199] },
+            { name: "Consulado", coords: [19.4503, -99.1136] },
+            { name: "Eduardo Molina", coords: [19.4497, -99.0989] },
+            { name: "Aragón", coords: [19.4475, -99.0886] },
+            { name: "Oceanía", coords: [19.4452, -99.0872] },
+            { name: "Terminal Aérea", coords: [19.4347, -99.0875] },
+            { name: "Hangares", coords: [19.4244, -99.0869] },
+            { name: "Pantitlán", coords: [19.4162, -99.0745] }
+        ]
+    },
+    "L6": {
+        name: "Línea 6",
+        color: "#d01c1f",
+        colorDark: "#a61215",
+        icon: "🚇",
+        stations: [
+            { name: "El Rosario", coords: [19.5042, -99.2001] },
+            { name: "Tezozómoc", coords: [19.4975, -99.1936] },
+            { name: "UAM-Azcapotzalco", coords: [19.4907, -99.1834] },
+            { name: "Ferrería / Arena CDMX", coords: [19.4904, -99.1730] },
+            { name: "Norte 45", coords: [19.4894, -99.1622] },
+            { name: "Vallejo", coords: [19.4896, -99.1558] },
+            { name: "Instituto del Petróleo", coords: [19.4897, -99.1428] },
+            { name: "Lindavista", coords: [19.4869, -99.1332] },
+            { name: "Deportivo 18 de Marzo", coords: [19.4839, -99.1243] },
+            { name: "La Villa-Basílica", coords: [19.4820, -99.1189] },
+            { name: "Martín Carrera", coords: [19.4851, -99.1044] }
+        ]
+    },
+    "L7": {
+        name: "Línea 7",
+        color: "#f37021",
+        colorDark: "#c75411",
+        icon: "🚇",
+        stations: [
+            { name: "El Rosario", coords: [19.5042, -99.2001] },
+            { name: "Aquiles Serdán", coords: [19.4883, -99.1947] },
+            { name: "Camarones", coords: [19.4789, -99.1896] },
+            { name: "Tacuba", coords: [19.4595, -99.1889] },
+            { name: "San Joaquín", coords: [19.4449, -99.1969] },
+            { name: "Polanco", coords: [19.4326, -99.2039] },
+            { name: "Auditorio", coords: [19.4252, -99.1999] },
+            { name: "Constituyentes", coords: [19.4116, -99.1906] },
+            { name: "Tacubaya", coords: [19.4032, -99.1873] },
+            { name: "San Pedro de los Pinos", coords: [19.3905, -99.1864] },
+            { name: "San Antonio", coords: [19.3846, -99.1866] },
+            { name: "Mixcoac", coords: [19.3758, -99.1881] },
+            { name: "Barranca del Muerto", coords: [19.3606, -99.1893] }
+        ]
+    },
+    "L8": {
+        name: "Línea 8",
+        color: "#008d64",
+        colorDark: "#006f4e",
+        icon: "🚇",
+        stations: [
+            { name: "Garibaldi / Lagunilla", coords: [19.4443, -99.1394] },
+            { name: "Bellas Artes", coords: [19.4362, -99.1418] },
+            { name: "San Juan de Letrán", coords: [19.4322, -99.1422] },
+            { name: "Salto del Agua", coords: [19.4270, -99.1423] },
+            { name: "Doctores", coords: [19.4215, -99.1415] },
+            { name: "Obrera", coords: [19.4132, -99.1399] },
+            { name: "Chabacano", coords: [19.4086, -99.1358] },
+            { name: "La Viga", coords: [19.4019, -99.1278] },
+            { name: "Santa Anita", coords: [19.4026, -99.1206] },
+            { name: "Coyuya", coords: [19.3986, -99.1130] },
+            { name: "Iztacalco", coords: [19.3888, -99.1122] },
+            { name: "Apatlaco", coords: [19.3789, -99.1154] },
+            { name: "Aculco", coords: [19.3725, -99.1147] },
+            { name: "Escuadrón 201", coords: [19.3644, -99.1102] },
+            { name: "Atlalilco", coords: [19.3556, -99.1017] },
+            { name: "Iztapalapa", coords: [19.3582, -99.0926] },
+            { name: "Cerro de la Estrella", coords: [19.3559, -99.0818] },
+            { name: "UAM-I", coords: [19.3508, -99.0747] },
+            { name: "Constitución de 1917", coords: [19.3458, -99.0628] }
+        ]
+    },
+    "L9": {
+        name: "Línea 9",
+        color: "#7e5109",
+        colorDark: "#623e05",
+        icon: "🚇",
+        stations: [
+            { name: "Tacubaya", coords: [19.4032, -99.1873] },
+            { name: "Patriotismo", coords: [19.4061, -99.1788] },
+            { name: "Chilpancingo", coords: [19.4060, -99.1684] },
+            { name: "Centro Médico", coords: [19.4069, -99.1547] },
+            { name: "Lázaro Cárdenas", coords: [19.4069, -99.1432] },
+            { name: "Chabacano", coords: [19.4086, -99.1358] },
+            { name: "Jamaica", coords: [19.4089, -99.1219] },
+            { name: "Mixiuhca", coords: [19.4085, -99.1100] },
+            { name: "Velódromo", coords: [19.4089, -99.0978] },
+            { name: "Ciudad Deportiva", coords: [19.4083, -99.0872] },
+            { name: "Puebla", coords: [19.4071, -99.0801] },
+            { name: "Pantitlán", coords: [19.4162, -99.0745] }
+        ]
+    },
+    "LA": {
+        name: "Línea A",
+        color: "#9b268f",
+        colorDark: "#7b1971",
+        icon: "🚇",
+        stations: [
+            { name: "Pantitlán", coords: [19.4162, -99.0745] },
+            { name: "Agrícola Oriental", coords: [19.4039, -99.0744] },
+            { name: "Canal de San Juan", coords: [19.3929, -99.0617] },
+            { name: "Tepalcates", coords: [19.3793, -99.0465] },
+            { name: "Guelatao", coords: [19.3692, -99.0347] },
+            { name: "Peñón Viejo", coords: [19.3582, -99.0175] },
+            { name: "Acatitla", coords: [19.3601, -98.9958] },
+            { name: "Santa Marta", coords: [19.3598, -98.9800] },
+            { name: "Los Reyes", coords: [19.3587, -98.9744] },
+            { name: "La Paz", coords: [19.3508, -98.9608] }
+        ]
+    },
+    "LB": {
+        name: "Línea B",
+        color: "#809a7a",
+        colorDark: "#647b5f",
+        icon: "🚇",
+        stations: [
+            { name: "Buenavista", coords: [19.4462, -99.1531] },
+            { name: "Guerrero", coords: [19.4449, -99.1447] },
+            { name: "Garibaldi / Lagunilla", coords: [19.4443, -99.1394] },
+            { name: "Lagunilla", coords: [19.4429, -99.1311] },
+            { name: "Tepito", coords: [19.4428, -99.1235] },
+            { name: "Morelos", coords: [19.4378, -99.1144] },
+            { name: "San Lázaro", coords: [19.4303, -99.1147] },
+            { name: "Ricardo Flores Magón", coords: [19.4357, -99.0991] },
+            { name: "Romero Rubio", coords: [19.4409, -99.0878] },
+            { name: "Oceanía", coords: [19.4452, -99.0872] },
+            { name: "Deportivo Oceanía", coords: [19.4533, -99.0749] },
+            { name: "Bosque de Aragón", coords: [19.4636, -99.0683] },
+            { name: "Villa de Aragón", coords: [19.4725, -99.0614] },
+            { name: "Nezahualcóyotl", coords: [19.4828, -99.0539] },
+            { name: "Impulsora", coords: [19.4939, -99.0456] },
+            { name: "Río de los Remedios", coords: [19.5019, -99.0396] },
+            { name: "Múzquiz", coords: [19.5161, -99.0361] },
+            { name: "Ecatepec", coords: [19.5283, -99.0321] },
+            { name: "Olímpica", coords: [19.5376, -99.0298] },
+            { name: "Plaza Aragón", coords: [19.5469, -99.0270] },
+            { name: "Ciudad Azteca", coords: [19.5539, -99.0253] }
+        ]
+    },
+    "L12": {
+        name: "Línea 12",
+        color: "#dfb11b",
+        colorDark: "#b58f11",
+        icon: "🚇",
+        stations: [
+            { name: "Mixcoac", coords: [19.3758, -99.1881] },
+            { name: "Insurgentes Sur", coords: [19.3742, -99.1788] },
+            { name: "Hospital 20 de Nov.", coords: [19.3725, -99.1699] },
+            { name: "Zapata", coords: [19.3707, -99.1648] },
+            { name: "Parque de los Venados", coords: [19.3694, -99.1578] },
+            { name: "Eje Central", coords: [19.3653, -99.1462] },
+            { name: "Ermita", coords: [19.3621, -99.1429] },
+            { name: "Mexicaltzingo", coords: [19.3598, -99.1288] },
+            { name: "Atlalilco", coords: [19.3556, -99.1017] },
+            { name: "Culhuacán", coords: [19.3499, -99.0934] },
+            { name: "San Andrés Tomatlán", coords: [19.3439, -99.0886] },
+            { name: "Lomas de Estrella", coords: [19.3339, -99.0822] },
+            { name: "Calle 11", coords: [19.3243, -99.0801] },
+            { name: "Periférico Oriente", coords: [19.3175, -99.0759] },
+            { name: "Tezonco", coords: [19.3114, -99.0706] },
+            { name: "Olivos", coords: [19.3069, -99.0641] },
+            { name: "Nopalera", coords: [19.3003, -99.0519] },
+            { name: "Zapotitlán", coords: [19.2966, -99.0439] },
+            { name: "Tlaltenco", coords: [19.2978, -99.0249] },
+            { name: "Tláhuac", coords: [19.2868, -99.0136] }
+        ]
+    }
+};
+
+// ================= ESTADO GLOBAL DE LA APLICACIÓN =================
+const AppState = {
+    role: null,                  // 'passenger' o 'vehicle'
+    map: null,                   // Instancia del mapa Leaflet
+    selectedLine: "L1",          // ID de línea seleccionada
+    userLocation: null,          // Coordenadas [lat, lng] del usuario
+    userMarker: null,            // Marcador Leaflet del usuario
+    
+    // Rutas e infraestructura del Metro en el mapa
+    drawnPolylines: {},          // Guarda las polilíneas de las líneas del metro
+    drawnStations: [],           // Marcadores de estaciones de la línea activa
+    
+    // Variables para el Conductor (Vehículo)
+    isTracking: false,           // ¿Está transmitiendo señal?
+    transmissionMode: "simulate", // 'simulate' o 'gps'
+    driverSelectedLine: "L1",    // Línea que opera el conductor
+    simulationInterval: null,    // ID del timer de simulación
+    simCurrentIndex: 0,          // Estación actual en la simulación
+    simNextIndex: 1,             // Siguiente estación en la simulación
+    simProgress: 0,              // Progreso entre estaciones (0 a 100)
+    simSpeedMultiplier: 1,       // Multiplicador de velocidad (1, 2, 5, 10)
+    gpsWatchId: null,            // WatchID del geolocalizador
+    vehicleCoords: null,         // Coordenadas actuales del conductor
+    
+    // Variables para el Pasajero (Usuario)
+    activeVehicles: {},          // Diccionario de vehículos remotos activos: { id: { marker, data, lastUpdate } }
+    activeFocusVehicleId: null   // ID del vehículo enfocado
+};
+
+// ================= CANAL DE COMUNICACIÓN EN TIEMPO REAL =================
+// Usamos BroadcastChannel para sincronizar ventanas del mismo navegador.
+// Agregamos respaldo en LocalStorage para garantizar soporte universal multiplataforma.
+const REALTIME_CHANNEL_NAME = 'ruti_realtime_v1';
+let realtimeChannel;
+
+try {
+    realtimeChannel = new BroadcastChannel(REALTIME_CHANNEL_NAME);
+    realtimeChannel.onmessage = (event) => handleIncomingMessage(event.data);
+} catch (e) {
+    console.warn("BroadcastChannel no soportado. Usando fallback de localStorage.");
+}
+
+// Fallback de LocalStorage para recibir mensajes de otros tabs
+window.addEventListener('storage', (e) => {
+    if (e.key === 'ruti_packet' && e.newValue) {
+        try {
+            const data = JSON.parse(e.newValue);
+            handleIncomingMessage(data);
+        } catch (err) {}
+    }
+});
+
+// ID único de conductor para esta sesión/pestaña (permite múltiples conductores simultáneos)
+const DRIVER_SESSION_ID = 'driver_' + Math.random().toString(36).substring(2, 9);
+
+// Función para enviar paquetes a través del canal en tiempo real
+function broadcastMessage(packet) {
+    packet.timestamp = Date.now();
+    packet.senderId = DRIVER_SESSION_ID;
+    
+    // 1. Enviar por BroadcastChannel
+    if (realtimeChannel) {
+        realtimeChannel.postMessage(packet);
+    }
+    
+    // 2. Enviar por LocalStorage (Fallback y redundancia)
+    localStorage.setItem('ruti_packet', JSON.stringify(packet));
+}
+
+
+// ================= INICIALIZACIÓN DEL MAPA =================
+function initMap() {
+    // Coordenadas iniciales: Centro de la Ciudad de México (Zócalo)
+    const cdmxCenter = [19.4328, -99.1332];
+    
+    AppState.map = L.map('map', {
+        zoomControl: true,
+        attributionControl: true
+    }).setView(cdmxCenter, 12);
+    
+    // Usamos el estilo Voyager de CartoDB (Limpio, elegante, colores tipo iOS)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(AppState.map);
+    
+    // Dibujar todas las líneas del metro en el mapa en un estado inicial transparente
+    drawAllMetroLines();
+    
+    // Seleccionar la Línea 1 por defecto al arrancar
+    selectMetroLine("L1");
+}
+
+// Dibujar la infraestructura completa de las 12 líneas
+function drawAllMetroLines() {
+    Object.keys(METRO_LINES).forEach(lineId => {
+        const line = METRO_LINES[lineId];
+        const latLngs = line.stations.map(station => station.coords);
+        
+        // Polilínea de fondo (resplandor)
+        const glowPolyline = L.polyline(latLngs, {
+            color: line.color,
+            weight: 8,
+            opacity: 0.15
+        }).addTo(AppState.map);
+        
+        // Polilínea principal (sutil inicialmente)
+        const mainPolyline = L.polyline(latLngs, {
+            color: line.color,
+            weight: 4,
+            opacity: 0.4
+        }).addTo(AppState.map);
+        
+        // Guardamos las referencias para poder alternar su visibilidad
+        AppState.drawnPolylines[lineId] = {
+            glow: glowPolyline,
+            main: mainPolyline
+        };
+    });
+}
+
+// Cambiar la visualización a una única línea del metro (Requerimiento del usuario)
+function selectMetroLine(lineId) {
+    if (!METRO_LINES[lineId]) return;
+    
+    AppState.selectedLine = lineId;
+    
+    // 1. Mostrar únicamente la línea seleccionada con brillo premium, atenuar/ocultar las demás
+    Object.keys(METRO_LINES).forEach(id => {
+        const polylines = AppState.drawnPolylines[id];
+        if (id === lineId) {
+            // Línea activa: resplandor y grosor premium
+            polylines.glow.setStyle({ opacity: 0.45, weight: 12 });
+            polylines.main.setStyle({ opacity: 1, weight: 5 });
+            polylines.main.bringToFront();
+        } else {
+            // Ocultar por completo las demás líneas (o ponerlas hiper-transparentes)
+            polylines.glow.setStyle({ opacity: 0 });
+            polylines.main.setStyle({ opacity: 0 });
+        }
+    });
+    
+    // 2. Limpiar estaciones previas y dibujar las de la línea activa
+    clearStationMarkers();
+    drawStationMarkers(lineId);
+    
+    // 3. Ajustar el zoom del mapa para encuadrar la línea completa de manera responsiva (iOS Style)
+    const activeLinePoly = AppState.drawnPolylines[lineId].main;
+    AppState.map.fitBounds(activeLinePoly.getBounds(), {
+        padding: [30, 30],
+        maxZoom: 14,
+        animate: true,
+        duration: 1.2
+    });
+    
+    // 4. Actualizar chips del DOM
+    updateActiveChipUI(lineId);
+}
+
+// Dibujar marcadores circulares para las estaciones de la línea activa
+function drawStationMarkers(lineId) {
+    const line = METRO_LINES[lineId];
+    
+    line.stations.forEach((station, index) => {
+        // Estilo limpio, circular y tipo Duolingo
+        const marker = L.circleMarker(station.coords, {
+            radius: 6,
+            fillColor: "#ffffff",
+            color: line.color,
+            weight: 3,
+            fillOpacity: 1,
+            zIndexOffset: 100
+        }).addTo(AppState.map);
+        
+        // Tooltip elegante
+        marker.bindTooltip(`<strong>${station.name}</strong>`, {
+            permanent: false,
+            direction: 'top',
+            offset: [0, -5],
+            className: 'custom-leaflet-tooltip'
+        });
+        
+        AppState.drawnStations.push(marker);
+    });
+}
+
+function clearStationMarkers() {
+    AppState.drawnStations.forEach(marker => {
+        AppState.map.removeLayer(marker);
+    });
+    AppState.drawnStations = [];
+}
+
+// Actualiza los estados de selección visual de la barra de chips superior
+function updateActiveChipUI(lineId) {
+    document.querySelectorAll('.line-chip').forEach(chip => {
+        const id = chip.getAttribute('data-line');
+        if (id === lineId) {
+            chip.classList.add('active');
+            chip.style.borderColor = METRO_LINES[lineId].color;
+            chip.style.boxShadow = `0 4px 0 ${METRO_LINES[lineId].colorDark}`;
+            // Centrar el chip seleccionado en la barra deslizable
+            chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        } else {
+            chip.classList.remove('active');
+            chip.style.borderColor = 'var(--border-light)';
+            chip.style.boxShadow = '0 4px 0 var(--border-light)';
+        }
+    });
+}
+
+// ================= GENERACIÓN DE LA UI DINÁMICA (CHIPS) =================
+function renderLineChips() {
+    const scrollContainer = document.getElementById('lines-scroll');
+    const selectSelect = document.getElementById('select-driver-line');
+    
+    scrollContainer.innerHTML = '';
+    selectSelect.innerHTML = '';
+    
+    Object.keys(METRO_LINES).forEach(lineId => {
+        const line = METRO_LINES[lineId];
+        
+        // 1. Crear Chip Superior
+        const chip = document.createElement('button');
+        chip.className = 'line-chip';
+        chip.setAttribute('data-line', lineId);
+        chip.style.color = 'var(--text-dark)';
+        
+        const dot = document.createElement('span');
+        dot.className = 'chip-dot';
+        dot.style.backgroundColor = line.color;
+        
+        const text = document.createElement('span');
+        text.innerText = line.name;
+        
+        chip.appendChild(dot);
+        chip.appendChild(text);
+        
+        chip.addEventListener('click', () => {
+            selectMetroLine(lineId);
+            
+            // Si el pasajero está en este rol, sugerirle que la línea ha cambiado
+            if (AppState.role === 'passenger') {
+                updatePassengerUIForLineChange(lineId);
+            }
+        });
+        
+        scrollContainer.appendChild(chip);
+        
+        // 2. Crear Opción en Selector de Conductor
+        const option = document.createElement('option');
+        option.value = lineId;
+        option.innerText = line.name;
+        selectSelect.appendChild(option);
+    });
+}
+
+// ================= GESTIÓN DE ROLES (FLUJOS DE BIENVENIDA) =================
+function setAppRole(role) {
+    AppState.role = role;
+    
+    // Ocultar ventana de bienvenida
+    const selector = document.getElementById('role-selector');
+    selector.classList.remove('active');
+    
+    // Configurar badges del header
+    const badge = document.getElementById('badge-role');
+    badge.innerText = role === 'passenger' ? 'Pasajero' : 'Conductor';
+    badge.className = `badge badge-${role === 'passenger' ? 'passenger' : 'vehicle'}`;
+    
+    // Toggle de paneles inferiores (Bottom Sheet)
+    const passengerPanel = document.getElementById('panel-passenger');
+    const vehiclePanel = document.getElementById('panel-vehicle');
+    
+    if (role === 'passenger') {
+        passengerPanel.classList.add('active');
+        vehiclePanel.classList.remove('active');
+        document.getElementById('btn-focus-train').classList.add('hidden');
+        resetPassengerView();
+    } else {
+        passengerPanel.classList.remove('active');
+        vehiclePanel.classList.add('active');
+        document.getElementById('btn-focus-train').classList.add('hidden');
+        
+        // Sincronizar el selector del conductor con la línea activa seleccionada en el mapa
+        document.getElementById('select-driver-line').value = AppState.selectedLine;
+        AppState.driverSelectedLine = AppState.selectedLine;
+        updateDriverPanelUI();
+    }
+    
+    // Solicitar ubicación en tiempo real en segundo plano (iOS Style)
+    requestUserLocation();
+}
+
+function resetPassengerView() {
+    document.getElementById('sync-indicator').classList.add('hidden');
+    document.getElementById('passenger-active-card').classList.add('hidden');
+    
+    document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
+    document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${METRO_LINES[AppState.selectedLine].name}.`;
+    
+    // Limpiar marcadores de trenes remotos
+    Object.keys(AppState.activeVehicles).forEach(id => {
+        AppState.map.removeLayer(AppState.activeVehicles[id].marker);
+    });
+    AppState.activeVehicles = {};
+}
+
+// Cambiar de rol en caliente (botón Header)
+document.getElementById('btn-change-role').addEventListener('click', () => {
+    // Detener transmisiones del conductor si están activas
+    if (AppState.isTracking) {
+        toggleTracking();
+    }
+    
+    // Limpiar marcadores
+    resetPassengerView();
+    
+    // Volver a mostrar pantalla de bienvenida
+    document.getElementById('role-selector').classList.add('active');
+});
+
+// ================= GEOLOCALIZACIÓN DEL USUARIO (GPS REAL) =================
+function requestUserLocation() {
+    if (!navigator.geolocation) {
+        console.warn("Geolocalización no soportada en este navegador.");
+        return;
+    }
+    
+    // Opciones de geolocalización de alta precisión
+    const geoOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+    };
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const coords = [position.coords.latitude, position.coords.longitude];
+            AppState.userLocation = coords;
+            updateUserMarker(coords);
+        },
+        (error) => {
+            console.warn("Permiso de GPS denegado o no disponible:", error.message);
+        },
+        geoOptions
+    );
+}
+
+// Botón de centrado de ubicación del usuario
+document.getElementById('btn-my-location').addEventListener('click', () => {
+    if (AppState.userLocation) {
+        AppState.map.setView(AppState.userLocation, 15, { animate: true, duration: 1 });
+    } else {
+        // Si no se tiene, volver a solicitar
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const coords = [pos.coords.latitude, pos.coords.longitude];
+                AppState.userLocation = coords;
+                updateUserMarker(coords);
+                AppState.map.setView(coords, 15, { animate: true, duration: 1 });
+            }, () => {
+                alert("Por favor, activa los permisos de ubicación en tu navegador para ver tu posición.");
+            });
+        }
+    }
+});
+
+function updateUserMarker(coords) {
+    if (AppState.userMarker) {
+        AppState.userMarker.setLatLng(coords);
+    } else {
+        // Icono Duolingo Pulsing Blue para GPS de iOS
+        const customIcon = L.divIcon({
+            className: 'custom-user-marker',
+            html: '<div class="user-gps-pulse"></div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+        
+        AppState.userMarker = L.marker(coords, {
+            icon: customIcon,
+            zIndexOffset: 90
+        }).addTo(AppState.map);
+        
+        AppState.userMarker.bindPopup("<b>¡Tú estás aquí!</b><br>Ubicación real vía GPS.");
+    }
+}
+
+// ================= GESTIÓN DEL CONDUCTOR (VEHÍCULO EMISOR) =================
+
+// Cambios de configuración del panel
+document.getElementById('select-driver-line').addEventListener('change', (e) => {
+    const val = e.target.value;
+    AppState.driverSelectedLine = val;
+    selectMetroLine(val); // Enfocar la línea correspondiente en el mapa
+    updateDriverPanelUI();
+});
+
+// Modos de transmisión: Simular vs GPS Real
+document.getElementById('btn-mode-simulate').addEventListener('click', () => {
+    setTransmissionMode('simulate');
+});
+
+document.getElementById('btn-mode-gps').addEventListener('click', () => {
+    setTransmissionMode('gps');
+});
+
+function setTransmissionMode(mode) {
+    if (AppState.isTracking) {
+        alert("Detén la transmisión activa para cambiar de modo.");
+        return;
+    }
+    
+    AppState.transmissionMode = mode;
+    
+    const btnSim = document.getElementById('btn-mode-simulate');
+    const btnGps = document.getElementById('btn-mode-gps');
+    const pnlSim = document.getElementById('simulation-settings');
+    const pnlGps = document.getElementById('gps-settings');
+    
+    if (mode === 'simulate') {
+        btnSim.classList.add('active');
+        btnGps.classList.remove('active');
+        pnlSim.classList.remove('hidden');
+        pnlGps.classList.add('hidden');
+    } else {
+        btnSim.classList.remove('active');
+        btnGps.classList.add('active');
+        pnlSim.classList.add('hidden');
+        pnlGps.classList.remove('hidden');
+    }
+}
+
+// Multiplicadores de Velocidad para simulación rápida
+document.querySelectorAll('.speed-chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+        const mult = parseInt(e.target.getAttribute('data-speed'));
+        AppState.simSpeedMultiplier = mult;
+        
+        document.querySelectorAll('.speed-chip').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        // Si la simulación está en curso, reiniciamos el intervalo con la nueva velocidad
+        if (AppState.isTracking && AppState.transmissionMode === 'simulate') {
+            stopSimulation();
+            startSimulation();
+        }
+    });
+});
+
+function updateDriverPanelUI() {
+    const line = METRO_LINES[AppState.driverSelectedLine];
+    if (line) {
+        document.getElementById('sim-current-station').innerText = line.stations[0].name;
+        document.getElementById('sim-next-station').innerText = line.stations[1] ? line.stations[1].name : "Terminal";
+    }
+}
+
+// Lógica de encendido / apagado del rastreador
+document.getElementById('btn-start-tracking').addEventListener('click', toggleTracking);
+
+function toggleTracking() {
+    const btn = document.getElementById('btn-start-tracking');
+    
+    if (!AppState.isTracking) {
+        // ENCIENDE TRANSMISIÓN
+        AppState.isTracking = true;
+        btn.innerText = "Detener Transmisión";
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        
+        // Bloquear selectores visuales durante transmisión
+        document.getElementById('select-driver-line').disabled = true;
+        document.getElementById('btn-mode-simulate').disabled = true;
+        document.getElementById('btn-mode-gps').disabled = true;
+        
+        if (AppState.transmissionMode === 'simulate') {
+            startSimulation();
+        } else {
+            startGPSTransmission();
+        }
+    } else {
+        // APAGA TRANSMISIÓN
+        AppState.isTracking = false;
+        btn.innerText = "Comenzar Transmisión";
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        
+        document.getElementById('select-driver-line').disabled = false;
+        document.getElementById('btn-mode-simulate').disabled = false;
+        document.getElementById('btn-mode-gps').disabled = false;
+        
+        if (AppState.transmissionMode === 'simulate') {
+            stopSimulation();
+        } else {
+            stopGPSTransmission();
+        }
+        
+        // Avisar a los pasajeros que la señal se apagó
+        broadcastMessage({
+            type: 'TRAIN_SHUTDOWN',
+            lineId: AppState.driverSelectedLine
+        });
+    }
+}
+
+// ================= SISTEMA DE SIMULACIÓN DE RUTA DEL METRO =================
+function startSimulation() {
+    const line = METRO_LINES[AppState.driverSelectedLine];
+    AppState.simCurrentIndex = 0;
+    AppState.simNextIndex = 1;
+    AppState.simProgress = 0;
+    
+    // Intervalo de actualización: cada 200 milisegundos para lograr un movimiento continuo e hiper-fluido
+    const baseIntervalTime = 200; 
+    
+    // Un tramo entre estaciones dura aproximadamente 8 segundos a velocidad 1x (40 ticks)
+    const ticksPerLeg = 40; 
+    
+    AppState.simulationInterval = setInterval(() => {
+        const curStation = line.stations[AppState.simCurrentIndex];
+        const nextStation = line.stations[AppState.simNextIndex];
+        
+        if (!curStation || !nextStation) {
+            // Llegamos al final de la línea: reiniciamos el recorrido
+            AppState.simCurrentIndex = 0;
+            AppState.simNextIndex = 1;
+            AppState.simProgress = 0;
+            return;
+        }
+        
+        // Avanzar el progreso
+        AppState.simProgress += (100 / ticksPerLeg) * AppState.simSpeedMultiplier;
+        
+        if (AppState.simProgress >= 100) {
+            // Llegamos a la siguiente estación
+            AppState.simProgress = 0;
+            AppState.simCurrentIndex = AppState.simNextIndex;
+            AppState.simNextIndex = AppState.simCurrentIndex + 1;
+            
+            if (AppState.simNextIndex >= line.stations.length) {
+                // Llegamos a la terminal. Invertimos la ruta o la reseteamos
+                AppState.simNextIndex = 0; // Para el MVP reseteamos al inicio
+            }
+            
+            // Actualizar textos informativos en el panel del Conductor
+            const activeCur = line.stations[AppState.simCurrentIndex].name;
+            const activeNext = line.stations[AppState.simNextIndex] ? line.stations[AppState.simNextIndex].name : "Fin de línea";
+            document.getElementById('sim-current-station').innerText = activeCur;
+            document.getElementById('sim-next-station').innerText = activeNext;
+        }
+        
+        // Calcular interpolación lineal (LERP) de coordenadas para movimiento ultra suave
+        const progressFrac = AppState.simProgress / 100;
+        const lat = curStation.coords[0] + (nextStation.coords[0] - curStation.coords[0]) * progressFrac;
+        const lng = curStation.coords[1] + (nextStation.coords[1] - curStation.coords[1]) * progressFrac;
+        
+        AppState.vehicleCoords = [lat, lng];
+        
+        // Dibujar el marcador en el mapa del propio conductor para que vea su posición simulada
+        updateLocalVehicleMarker([lat, lng], line);
+        
+        // ENVIAR SEÑAL EN TIEMPO REAL
+        broadcastMessage({
+            type: 'TRAIN_UPDATE',
+            lineId: AppState.driverSelectedLine,
+            coords: [lat, lng],
+            prevStation: curStation.name,
+            nextStation: nextStation.name,
+            progress: AppState.simProgress,
+            isSimulated: true
+        });
+        
+    }, baseIntervalTime);
+}
+
+function stopSimulation() {
+    if (AppState.simulationInterval) {
+        clearInterval(AppState.simulationInterval);
+        AppState.simulationInterval = null;
+    }
+}
+
+// ================= SISTEMA DE GPS REAL PARA CONDUCTOR =================
+function startGPSTransmission() {
+    const textStatus = document.getElementById('gps-status-text');
+    const textCoords = document.getElementById('gps-coords-text');
+    const dot = document.getElementById('gps-dot');
+    
+    textStatus.innerText = "Buscando señal GPS...";
+    dot.className = "gps-indicator-dot pulsing-green";
+    
+    if (!navigator.geolocation) {
+        textStatus.innerText = "GPS no soportado";
+        alert("Tu dispositivo no soporta la Geolocalización.");
+        toggleTracking();
+        return;
+    }
+    
+    AppState.gpsWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            AppState.vehicleCoords = [lat, lng];
+            
+            textStatus.innerText = "Transmitiendo en vivo";
+            textCoords.innerText = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+            
+            const line = METRO_LINES[AppState.driverSelectedLine];
+            
+            // Dibujar marcador local en el mapa del conductor
+            updateLocalVehicleMarker([lat, lng], line);
+            
+            // ENVIAR SEÑAL GPS EN TIEMPO REAL
+            broadcastMessage({
+                type: 'TRAIN_UPDATE',
+                lineId: AppState.driverSelectedLine,
+                coords: [lat, lng],
+                prevStation: "Posición GPS",
+                nextStation: "En ruta real",
+                progress: 50, // Progreso estático para GPS real
+                isSimulated: false
+            });
+        },
+        (error) => {
+            textStatus.innerText = "Error GPS";
+            textCoords.innerText = error.message;
+            dot.className = "gps-indicator-dot pulsing-red";
+            console.error("Error en watchPosition:", error);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+}
+
+function stopGPSTransmission() {
+    if (AppState.gpsWatchId) {
+        navigator.geolocation.clearWatch(AppState.gpsWatchId);
+        AppState.gpsWatchId = null;
+    }
+    
+    document.getElementById('gps-status-text').innerText = "GPS Inactivo";
+    document.getElementById('gps-coords-text').innerText = "Lat: --, Lng: --";
+    document.getElementById('gps-dot').className = "gps-indicator-dot pulsing-red";
+}
+
+// Dibujar la posición actual del conductor en su propio mapa
+function updateLocalVehicleMarker(coords, line) {
+    const markerId = 'local-driver';
+    
+    if (AppState.activeVehicles[markerId]) {
+        AppState.activeVehicles[markerId].marker.setLatLng(coords);
+    } else {
+        const customIcon = L.divIcon({
+            className: 'custom-train-marker',
+            html: `<div class="train-marker-pin" style="color: ${line.color};">🚋</div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 36]
+        });
+        
+        const marker = L.marker(coords, {
+            icon: customIcon,
+            zIndexOffset: 200
+        }).addTo(AppState.map);
+        
+        marker.bindPopup(`<b>Mi Tren (${line.name})</b><br>Transmitiendo señal.`);
+        
+        AppState.activeVehicles[markerId] = {
+            marker: marker,
+            lastUpdate: Date.now()
+        };
+    }
+}
+
+// ================= GESTIÓN DEL PASAJERO (RECEPTOR Y MAPAS EN VIVO) =================
+
+// Manejar los mensajes que entran desde los tabs emisores
+function handleIncomingMessage(packet) {
+    if (AppState.role !== 'passenger') return; // Solo procesa la señal en modo Pasajero
+    
+    if (packet.type === 'TRAIN_UPDATE') {
+        processTrainSignal(packet);
+    } else if (packet.type === 'TRAIN_SHUTDOWN') {
+        processTrainShutdown(packet.lineId);
+    }
+}
+
+function resetPassengerViewOnlyBottomCard() {
+    document.getElementById('passenger-active-card').classList.add('hidden');
+    document.getElementById('passenger-status-title').innerText = "Buscando trenes...";
+    document.getElementById('passenger-status-desc').innerText = `Selecciona una línea arriba para ver trenes activos en la ${METRO_LINES[AppState.selectedLine].name}.`;
+}
+
+function processTrainSignal(packet) {
+    const line = METRO_LINES[packet.lineId];
+    if (!line) return;
+    
+    // 1. Mostrar Toast de conexión activa (iOS Style)
+    const toast = document.getElementById('sync-indicator');
+    toast.classList.remove('hidden');
+    
+    // ================= ACTUALIZAR MARCADOR EN EL MAPA (SIEMPRE VISIBLE) =================
+    const vehicleId = packet.senderId;
+    
+    if (AppState.activeVehicles[vehicleId]) {
+        // Actualizar posición del marcador con movimiento suave
+        AppState.activeVehicles[vehicleId].marker.setLatLng(packet.coords);
+        AppState.activeVehicles[vehicleId].lastUpdate = Date.now();
+        AppState.activeVehicles[vehicleId].lineId = packet.lineId; // Guardar línea actual
+        
+        // Actualizar popup dinámicamente con aviso de interacción
+        AppState.activeVehicles[vehicleId].marker.getPopup().setContent(`<b>${line.name}</b><br>Próxima parada: ${packet.nextStation}<br><span style="font-size:10.5px;color:var(--duo-blue);font-weight:700;">Haga clic para enfocar esta línea</span>`);
+    } else {
+        // Crear nuevo marcador del tren con color oficial
+        const customIcon = L.divIcon({
+            className: 'custom-train-marker',
+            html: `<div class="train-marker-pin" style="color: ${line.color};">🚋</div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 36]
+        });
+        
+        const marker = L.marker(packet.coords, {
+            icon: customIcon,
+            zIndexOffset: 300
+        }).addTo(AppState.map);
+        
+        marker.bindPopup(`<b>${line.name}</b><br>Próxima parada: ${packet.nextStation}<br><span style="font-size:10.5px;color:var(--duo-blue);font-weight:700;">Haga clic para enfocar esta línea</span>`);
+        
+        // MICRO-INTERACCIÓN PREMIUM: Al hacer clic en un tren, auto-seleccionar y destacar esa línea
+        marker.on('click', () => {
+            selectMetroLine(packet.lineId);
+            updatePassengerUIForLineChange(packet.lineId);
+            // Hacer scroll hasta el chip correspondiente
+            const chip = document.querySelector(`.line-chip[data-line="${packet.lineId}"]`);
+            if (chip) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
+        
+        AppState.activeVehicles[vehicleId] = {
+            marker: marker,
+            lastUpdate: Date.now(),
+            lineId: packet.lineId
+        };
+        
+        // Mostrar botón flotante para enfocar tren
+        document.getElementById('btn-focus-train').classList.remove('hidden');
+        AppState.activeFocusVehicleId = vehicleId;
+    }
+    
+    // ================= ACTUALIZAR BOTTOM SHEET SOLO SI ES LA LÍNEA SELECCIONADA =================
+    if (packet.lineId === AppState.selectedLine) {
+        // 2. Actualizar paneles del Bottom Sheet (Estadísticas tipo Duolingo)
+        document.getElementById('passenger-status-title').innerText = "¡Señal recibida en vivo!";
+        document.getElementById('passenger-status-desc').innerText = `Se ha detectado un tren circulando sobre la ${line.name} en tiempo real.`;
+        
+        // Mostrar tarjeta detallada
+        const card = document.getElementById('passenger-active-card');
+        card.classList.remove('hidden');
+        
+        const cardLine = document.getElementById('pass-card-line');
+        cardLine.innerText = packet.lineId;
+        cardLine.style.backgroundColor = line.color;
+        cardLine.style.boxShadow = `0 4px 0 ${line.colorDark}`;
+        
+        document.getElementById('pass-card-current').innerText = packet.prevStation;
+        document.getElementById('pass-card-next').innerText = packet.nextStation;
+        
+        // Barra de progreso Duolingo
+        const fillBar = document.getElementById('pass-card-progress');
+        fillBar.style.width = `${packet.progress}%`;
+        fillBar.style.backgroundColor = line.color;
+        
+        // Calcular ETA estimativa en base al progreso de la simulación
+        const remainingPercentage = 100 - packet.progress;
+        let secondsLeft = Math.round(remainingPercentage * 0.08); // 8 segundos base por tramo
+        
+        if (packet.isSimulated) {
+            document.getElementById('pass-card-time').innerText = secondsLeft > 0 ? `Arribando en aprox. ${secondsLeft}s` : "¡Arribando ahora mismo!";
+        } else {
+            document.getElementById('pass-card-time').innerText = "Transmisión GPS en vivo";
+        }
+    }
+}
+
+// Enfocar al tren desde el botón flotante
+document.getElementById('btn-focus-train').addEventListener('click', () => {
+    const activeId = AppState.activeFocusVehicleId;
+    if (activeId && AppState.activeVehicles[activeId]) {
+        const coords = AppState.activeVehicles[activeId].marker.getLatLng();
+        AppState.map.setView(coords, 15, { animate: true, duration: 1 });
+    }
+});
+
+// Manejo de apagado del tren
+function processTrainShutdown(packet) {
+    const vehicleId = packet.senderId;
+    
+    if (AppState.activeVehicles[vehicleId]) {
+        AppState.map.removeLayer(AppState.activeVehicles[vehicleId].marker);
+        delete AppState.activeVehicles[vehicleId];
+    }
+    
+    // Si la línea es la que estamos viendo, limpiamos y notificamos
+    if (packet.lineId === AppState.selectedLine) {
+        resetPassengerViewOnlyBottomCard();
+        
+        // Mostramos un toast flotante temporal que avise de la desconexión
+        const toast = document.getElementById('sync-indicator');
+        toast.classList.remove('hidden');
+        toast.querySelector('.toast-dot').className = "toast-dot pulsing-red";
+        toast.querySelector('.toast-text').innerText = `Señal de tren (${METRO_LINES[packet.lineId].name}) perdida`;
+        
+        setTimeout(() => {
+            if (Object.keys(AppState.activeVehicles).length === 0) {
+                toast.classList.add('hidden');
+                toast.querySelector('.toast-dot').className = "toast-dot pulsing-green";
+                toast.querySelector('.toast-text').innerText = "Conectado a señal de tren";
+            } else {
+                // Si aún quedan otros trenes en otras líneas, restaurar toast a verde
+                toast.querySelector('.toast-dot').className = "toast-dot pulsing-green";
+                toast.querySelector('.toast-text').innerText = "Conectado a señal de tren";
+            }
+        }, 5000);
+    }
+}
+
+// Al cambiar el pasajero de línea en la barra superior
+function updatePassengerUIForLineChange(lineId) {
+    resetPassengerViewOnlyBottomCard();
+    // Si no hay ningún tren en la nueva línea seleccionada en el mapa, ocultamos temporalmente el toast de conexión
+    const hasActiveTrainOnLine = Object.values(AppState.activeVehicles).some(v => v.lineId === lineId);
+    if (!hasActiveTrainOnLine) {
+        document.getElementById('sync-indicator').classList.add('hidden');
+    } else {
+        document.getElementById('sync-indicator').classList.remove('hidden');
+    }
+}
+
+
+// ================= TEMPORIZADOR DE MANTENIMIENTO DE SEÑAL =================
+// Si un emisor de tren deja de transmitir (p.ej. se cierra el tab), limpiamos su señal después de 8 segundos sin recibir pings.
+setInterval(() => {
+    if (AppState.role !== 'passenger') return;
+    
+    const now = Date.now();
+    let signalLost = false;
+    
+    Object.keys(AppState.activeVehicles).forEach(id => {
+        // Excluimos la señal de conductor local para evitar bugs en pruebas unitarias del mismo navegador
+        if (id === 'local-driver') return; 
+        
+        if (now - AppState.activeVehicles[id].lastUpdate > 8000) {
+            // Signal timeout
+            AppState.map.removeLayer(AppState.activeVehicles[id].marker);
+            delete AppState.activeVehicles[id];
+            signalLost = true;
+        }
+    });
+    
+    if (signalLost && Object.keys(AppState.activeVehicles).length === 0) {
+        resetPassengerView();
+        const toast = document.getElementById('sync-indicator');
+        toast.classList.add('hidden');
+        document.getElementById('btn-focus-train').classList.add('hidden');
+    }
+}, 3000);
+
+// ================= INICIALIZACIÓN GENERAL =================
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. Renderizar chips superiores y selectores
+    renderLineChips();
+    
+    // 2. Inicializar Mapa e Infraestructura del Metro
+    initMap();
+    
+    // 3. Vincular botones de rol
+    document.getElementById('btn-role-passenger').addEventListener('click', () => setAppRole('passenger'));
+    document.getElementById('btn-role-vehicle').addEventListener('click', () => setAppRole('vehicle'));
+});

@@ -1,0 +1,19 @@
+{
+  "name": "ruti-mvp",
+  "version": "1.0.0",
+  "description": "Ruti - Real-time CDMX Metro Tracking MVP (Duolingo & iOS Style)",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000 -c-1"
+  },
+  "keywords": [
+    "metro",
+    "cdmx",
+    "realtime",
+    "tracker",
+    "duolingo",
+    "ios"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruti - CDMX Metro en Tiempo Real</title>
+    
+    <!-- Google Fonts: Inter para texto, Outfit para encabezados amigables -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet.js para los mapas interactivos -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-theme">
+    
+    <!-- ================= PANTALLA DE SELECCIÓN DE ROL ================= -->
+    <div id="role-selector" class="overlay-screen active">
+        <div class="card-modal selector-modal">
+            <!-- Ruti Mascota en CSS/SVG -->
+            <div class="mascot-container">
+                <svg class="ruti-mascot" viewBox="0 0 120 120" width="120" height="120">
+                    <!-- Sombra -->
+                    <ellipse cx="60" cy="110" rx="45" ry="8" fill="#e5e5e5" />
+                    <!-- Cuerpo del Tren (Duolingo Style: Redondeado, brillante) -->
+                    <rect x="25" y="30" width="70" height="65" rx="20" fill="#58cc02" />
+                    <rect x="25" y="85" width="70" height="10" fill="#46a302" />
+                    
+                    <!-- Cara / Parabrisas (Blanco redondeado) -->
+                    <rect x="35" y="40" width="50" height="32" rx="10" fill="#ffffff" />
+                    
+                    <!-- Ojos Grandes y Adorables (Estilo Duolingo) -->
+                    <circle cx="50" cy="56" r="7" fill="#4b4b4b" />
+                    <circle cx="70" cy="56" r="7" fill="#4b4b4b" />
+                    <!-- Brillo en los ojos -->
+                    <circle cx="48" cy="53" r="2.5" fill="#ffffff" />
+                    <circle cx="68" cy="53" r="2.5" fill="#ffffff" />
+                    
+                    <!-- Mejillas sonrosadas -->
+                    <ellipse cx="42" cy="65" rx="5" ry="3" fill="#ff8a9a" opacity="0.8" />
+                    <ellipse cx="78" cy="65" rx="5" ry="3" fill="#ff8a9a" opacity="0.8" />
+                    
+                    <!-- Gran Sonrisa -->
+                    <path d="M 55 64 Q 60 69 65 64" stroke="#4b4b4b" stroke-width="3" stroke-linecap="round" fill="none" />
+                    
+                    <!-- Luces del tren -->
+                    <circle cx="38" cy="80" r="5" fill="#ffc800" />
+                    <circle cx="82" cy="80" r="5" fill="#ffc800" />
+                </svg>
+            </div>
+            
+            <h1 class="app-title-huge">ruti</h1>
+            <p class="app-tagline">¡El metro de la CDMX en la palma de tu mano!</p>
+            
+            <div class="welcome-text-container">
+                <h2>¿Cómo vas a viajar hoy?</h2>
+                <p>Elige tu rol para comenzar a rastrear en tiempo real.</p>
+            </div>
+            
+            <div class="roles-grid">
+                <!-- ROL PASAJERO -->
+                <button id="btn-role-passenger" class="role-card card-passenger">
+                    <div class="role-icon-wrapper">
+                        <!-- Icono Pasajero SVG -->
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <h3>Soy Pasajero</h3>
+                        <p>Ver rutas del metro, ubicar trenes en vivo y ver mi ubicación actual.</p>
+                    </div>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+                    </div>
+                </button>
+                
+                <!-- ROL VEHICULO (METRO) -->
+                <button id="btn-role-vehicle" class="role-card card-vehicle">
+                    <div class="role-icon-wrapper">
+                        <!-- Icono Tren Conductor SVG -->
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="3" width="16" height="16" rx="2" />
+                            <path d="M4 11h16" />
+                            <path d="M12 3v8" />
+                            <path d="M8 19l-2 3" />
+                            <path d="M16 19l2 3" />
+                            <circle cx="8" cy="15" r="1" fill="currentColor"/>
+                            <circle cx="16" cy="15" r="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <h3>Soy Conductor</h3>
+                        <p>Compartir la posición del tren en vivo o simular un recorrido de prueba.</p>
+                    </div>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="footer-note">
+                Ruti MVP &bull; Hecho para la Ciudad de México
+            </div>
+        </div>
+    </div>
+    
+    <!-- ================= PANTALLA PRINCIPAL DE LA APLICACIÓN ================= -->
+    <div id="main-app" class="app-screen">
+        <!-- HEADER SUPERIOR -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="mini-logo">
+                    <span class="logo-circle">r</span>
+                </div>
+                <span class="logo-text">ruti</span>
+                <span id="badge-role" class="badge badge-passenger">Pasajero</span>
+            </div>
+            <button id="btn-change-role" class="btn-chunky btn-secondary btn-small">
+                Cambiar Rol
+            </button>
+        </header>
+        
+        <!-- BARRA DESLIZABLE DE CHIPS DE LÍNEAS -->
+        <div class="chips-container-wrapper">
+            <div id="lines-scroll" class="chips-container">
+                <!-- Los chips se generarán dinámicamente con JS para evitar duplicación y asegurar consistencia -->
+            </div>
+        </div>
+        
+        <!-- MAPA Y OVERLAYS -->
+        <div class="map-wrapper">
+            <div id="map"></div>
+            
+            <!-- Botones flotantes (iOS Style) -->
+            <div class="floating-controls">
+                <button id="btn-my-location" class="fab-btn" title="Mi ubicación">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+                    </svg>
+                </button>
+                <button id="btn-focus-train" class="fab-btn hidden" title="Enfocar Tren">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="4" y="3" width="16" height="16" rx="2" />
+                        <path d="M4 11h16" />
+                        <circle cx="8" cy="15" r="1" fill="currentColor"/>
+                        <circle cx="16" cy="15" r="1" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Indicador de Sincronización en Tiempo Real -->
+            <div id="sync-indicator" class="sync-toast hidden">
+                <span class="toast-dot pulsing-green"></span>
+                <span class="toast-text">Conectado a señal de tren</span>
+            </div>
+        </div>
+        
+        <!-- PANELES DE INFORMACIÓN / CONTROL (BOTTOM SHEET) -->
+        <footer class="bottom-sheet">
+            <!-- PANEL DEL PASAJERO -->
+            <div id="panel-passenger" class="sheet-content active">
+                <div class="sheet-drag-handle"></div>
+                <div class="sheet-header">
+                    <div class="status-avatar">
+                        <div class="avatar-train-pulse">🚇</div>
+                    </div>
+                    <div class="status-details">
+                        <h4 id="passenger-status-title">Buscando trenes...</h4>
+                        <p id="passenger-status-desc">Selecciona una línea de metro arriba para ver su trazado y trenes activos.</p>
+                    </div>
+                </div>
+                
+                <div id="passenger-active-card" class="info-card-chunky hidden">
+                    <div class="card-line-badge" id="pass-card-line">L1</div>
+                    <div class="card-route-info">
+                        <div class="route-stations">
+                            <span class="station-name bold" id="pass-card-current">--</span>
+                            <span class="route-arrow">➔</span>
+                            <span class="station-name" id="pass-card-next">--</span>
+                        </div>
+                        <div class="duo-progress-bar-container">
+                            <div class="duo-progress-bar-fill" id="pass-card-progress" style="width: 0%;"></div>
+                        </div>
+                        <div class="route-meta">
+                            <span id="pass-card-time">Calculando arribo...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modo Demo rápido -->
+                <div class="passenger-demo-hint">
+                    <p>💡 <strong>Tip de Prueba:</strong> Abre otra pestaña de esta app como <strong>Conductor</strong> para emitir señal en tiempo real y ver el tren moverse aquí.</p>
+                </div>
+            </div>
+            
+            <!-- PANEL DEL CONDUCTOR (VEHÍCULO) -->
+            <div id="panel-vehicle" class="sheet-content">
+                <div class="sheet-drag-handle"></div>
+                
+                <div class="driver-controls-grid">
+                    <div class="control-box">
+                        <label class="control-label">1. Selecciona la línea que manejas</label>
+                        <select id="select-driver-line" class="chunky-select">
+                            <!-- Se poblará con las líneas del metro -->
+                        </select>
+                    </div>
+                    
+                    <div class="control-box">
+                        <label class="control-label">2. Modo de transmisión</label>
+                        <div class="transmission-modes">
+                            <button id="btn-mode-simulate" class="btn-toggle active">
+                                <span>🤖 Simular Ruta</span>
+                            </button>
+                            <button id="btn-mode-gps" class="btn-toggle">
+                                <span>📡 GPS del Celular</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección Simulación -->
+                <div id="simulation-settings" class="settings-panel">
+                    <div class="simulation-info-row">
+                        <div class="sim-stat">
+                            <span class="sim-stat-label">Estación Actual</span>
+                            <span id="sim-current-station" class="sim-stat-value">--</span>
+                        </div>
+                        <div class="sim-stat">
+                            <span class="sim-stat-label">Siguiente Parada</span>
+                            <span id="sim-next-station" class="sim-stat-value">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="speed-control-container">
+                        <label class="control-label">Velocidad de Simulación</label>
+                        <div class="speed-chips">
+                            <button class="speed-chip active" data-speed="1">1x</button>
+                            <button class="speed-chip" data-speed="2">2x</button>
+                            <button class="speed-chip" data-speed="5">5x</button>
+                            <button class="speed-chip" data-speed="10">10x</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección GPS Real -->
+                <div id="gps-settings" class="settings-panel hidden">
+                    <div class="gps-status-card">
+                        <div class="gps-indicator-dot pulsing-red" id="gps-dot"></div>
+                        <div class="gps-meta-info">
+                            <span class="gps-status-text" id="gps-status-text">GPS Inactivo</span>
+                            <span class="gps-coords-text" id="gps-coords-text">Lat: --, Lng: --</span>
+                        </div>
+                    </div>
+                    <p class="gps-disclaimer">Se usará el sensor de geolocalización de tu dispositivo para transmitir la ubicación exacta.</p>
+                </div>
+                
+                <!-- Botón de Acción Principal -->
+                <div class="action-btn-wrapper">
+                    <button id="btn-start-tracking" class="btn-chunky btn-primary btn-full">
+                        Comenzar Transmisión
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Archivo lógico de la aplicación -->
+    <script src="app.js"></script>
+</body>
+</html>
