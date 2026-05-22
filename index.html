@@ -115,6 +115,25 @@
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
                     </div>
                 </button>
+                
+                <!-- ROL EMPRESA B2B -->
+                <button id="btn-role-b2b" class="role-card card-b2b">
+                    <div class="role-icon-wrapper">
+                        <!-- Icono Analytics B2B SVG -->
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                    </div>
+                    <div class="role-info">
+                        <h3>Soy Empresa / Inversionista</h3>
+                        <p>Analizar afluencia en tiempo real y simular campañas de microcréditos de transporte.</p>
+                    </div>
+                    <div class="card-arrow">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+                    </div>
+                </button>
             </div>
             
             <!-- ===== CONSENTIMIENTO DE DATOS ANÓNIMOS ===== -->
@@ -338,6 +357,117 @@
                     <button id="btn-start-tracking" class="btn-chunky btn-primary btn-full">
                         Comenzar Transmisión
                     </button>
+                </div>
+            </div>
+            
+            <!-- PANEL DE INTELIGENCIA DE MOVILIDAD B2B -->
+            <div id="panel-b2b" class="sheet-content">
+                <div class="sheet-drag-handle"></div>
+                
+                <div class="sheet-header">
+                    <div class="status-avatar b2b-avatar">📊</div>
+                    <div class="status-details">
+                        <h4 id="b2b-status-title">Panel de Movilidad B2B</h4>
+                        <p id="b2b-status-desc">Analiza flujos de movilidad urbana y califica candidatos a microcréditos de transporte.</p>
+                    </div>
+                </div>
+                
+                <!-- Toggle Mapa de Calor de Afluencia -->
+                <div class="b2b-toggle-card">
+                    <label class="privacy-toggle-label" for="toggle-heatmap">
+                        <div class="privacy-toggle-content">
+                            <span class="privacy-icon">🔥</span>
+                            <div class="privacy-text">
+                                <strong>Mapa de Calor de Afluencia</strong>
+                                <span>Ver densidad de pasajeros en estaciones de la línea seleccionada.</span>
+                            </div>
+                        </div>
+                        <div class="toggle-switch-wrapper">
+                            <input type="checkbox" id="toggle-heatmap" class="toggle-checkbox">
+                            <span class="toggle-switch"></span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- KPIs de Scoring Crediticio Alternativo -->
+                <h5 class="b2b-section-title">📊 Perfilamiento Crediticio de Pasajeros</h5>
+                <div class="b2b-metrics-grid">
+                    <div class="b2b-metric-card shadow-3d">
+                        <span class="b2b-metric-icon">📅</span>
+                        <div class="b2b-metric-data">
+                            <span class="b2b-metric-val" id="metric-stability">78%</span>
+                            <span class="b2b-metric-label">Estabilidad Laboral</span>
+                        </div>
+                    </div>
+                    <div class="b2b-metric-card shadow-3d">
+                        <span class="b2b-metric-icon">📱</span>
+                        <div class="b2b-metric-data">
+                            <span class="b2b-metric-val" id="metric-devices">Gama Media</span>
+                            <span class="b2b-metric-label">Poder Adquisitivo</span>
+                        </div>
+                    </div>
+                    <div class="b2b-metric-card shadow-3d">
+                        <span class="b2b-metric-icon">💳</span>
+                        <div class="b2b-metric-data">
+                            <span class="b2b-metric-val" id="metric-interest">62%</span>
+                            <span class="b2b-metric-label">Interés en Crédito</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Simulador de Campaña de Leads -->
+                <h5 class="b2b-section-title">🚀 Simulador de Captación de Leads</h5>
+                <div class="b2b-simulator-card">
+                    <div class="simulator-controls-row">
+                        <div class="control-box">
+                            <label class="control-label" for="select-b2b-product">Producto Financiero</label>
+                            <select id="select-b2b-product" class="chunky-select">
+                                <option value="microcredit">Microcrédito de Transporte ($200 - $500)</option>
+                                <option value="salary_advance">Adelanto de Nómina ($1,000 - $3,000)</option>
+                                <option value="insurance">Seguro de Accidentes en Trayecto</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="action-btn-wrapper" style="margin-top: 16px;">
+                        <button id="btn-simulate-campaign" class="btn-chunky btn-primary btn-full" style="background-color: var(--duo-pink); border-color: var(--duo-pink); border-bottom-color: var(--duo-pink-dark);">
+                            Simular Campaña de Captación
+                        </button>
+                    </div>
+                    
+                    <!-- Barra de progreso simulador (Duolingo style) -->
+                    <div id="b2b-progress-container" class="b2b-progress-container hidden" style="margin-top: 16px;">
+                        <div class="progress-header">
+                            <span class="progress-title">Procesando telemetría de movilidad...</span>
+                            <span id="b2b-progress-percent" class="progress-percent">0%</span>
+                        </div>
+                        <div class="duo-progress-bar-container">
+                            <div id="b2b-progress-bar-fill" class="duo-progress-bar-fill" style="width: 0%; background-color: var(--duo-pink);"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panel de Resultados (Chunky Card) -->
+                    <div id="b2b-results-card" class="b2b-results-card hidden">
+                        <div class="results-header">
+                            <span class="results-badge">Proyección de Campaña</span>
+                            <span id="results-line-name" class="results-line">Línea 1</span>
+                        </div>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <span class="result-val" id="result-leads">--</span>
+                                <span class="result-label">Leads Pre-aprobados</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-val" id="result-conversion">--</span>
+                                <span class="result-label">Tasa de Conversión</span>
+                            </div>
+                            <div class="result-item" style="grid-column: 1 / -1; border-top: 1px solid var(--border-light); padding-top: 8px; margin-top: 8px;">
+                                <span class="result-val font-large" id="result-commission" style="color: var(--duo-green);">--</span>
+                                <span class="result-label">Comisión Estimada (B2B)</span>
+                            </div>
+                        </div>
+                        <p class="results-disclaimer">Simulación basada en flujos reales agregados de la línea y producto seleccionados.</p>
+                    </div>
                 </div>
             </div>
         </footer>

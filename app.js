@@ -298,11 +298,15 @@ const METRO_LINES = {
 
 // ================= ESTADO GLOBAL DE LA APLICACIÓN =================
 const AppState = {
-    role: null,                  // 'passenger' o 'vehicle'
+    role: null,                  // 'passenger', 'vehicle' o 'b2b'
     map: null,                   // Instancia del mapa Leaflet
     selectedLine: "L1",          // ID de línea seleccionada
     userLocation: null,          // Coordenadas [lat, lng] del usuario
     userMarker: null,            // Marcador Leaflet del usuario
+    
+    // Variables para B2B Analytics
+    heatmapLayerGroup: null,     // Grupo de capas Leaflet para el mapa de calor
+    heatmapVisible: false,       // Estado de visibilidad del mapa de calor B2B
     
     // Rutas e infraestructura del Metro en el mapa
     drawnPolylines: {},          // Guarda las polilíneas de las líneas del metro
@@ -758,6 +762,9 @@ function initMap() {
     // Dibujar todas las líneas del metro en el mapa en un estado inicial transparente
     drawAllMetroLines();
     
+    // Inicializar grupo de capa para el mapa de calor B2B
+    AppState.heatmapLayerGroup = L.layerGroup().addTo(AppState.map);
+    
     // Seleccionar la Línea 1 por defecto al arrancar
     selectMetroLine("L1");
 }
@@ -841,6 +848,18 @@ function selectMetroLine(lineId) {
     // Si estamos en modo "Todas", poblar listado
     if (AppState.role === 'passenger' && lineId === 'ALL') {
         updateAllSummaryCard();
+    }
+    
+    // Soporte para B2B Analytics
+    if (AppState.role === 'b2b') {
+        updateB2BAlternativeMetrics();
+        drawB2BHeatmap();
+        
+        // Actualizar el nombre de la línea en la tarjeta de resultados si está visible
+        const resultsLineName = document.getElementById('results-line-name');
+        if (resultsLineName) {
+            resultsLineName.innerText = lineId === 'ALL' ? 'Todas las Líneas' : (METRO_LINES[lineId]?.name || lineId);
+        }
     }
 }
 
@@ -1142,23 +1161,34 @@ function setAppRole(role) {
     
     // Configurar badges del header
     const badge = document.getElementById('badge-role');
-    badge.innerText = role === 'passenger' ? 'Pasajero' : 'Conductor';
-    badge.className = `badge badge-${role === 'passenger' ? 'passenger' : 'vehicle'}`;
+    if (role === 'passenger') {
+        badge.innerText = 'Pasajero';
+        badge.className = 'badge badge-passenger';
+    } else if (role === 'vehicle') {
+        badge.innerText = 'Conductor';
+        badge.className = 'badge badge-vehicle';
+    } else if (role === 'b2b') {
+        badge.innerText = 'Analítica B2B';
+        badge.className = 'badge badge-b2b';
+    }
     
     // Toggle de paneles inferiores (Bottom Sheet)
     const passengerPanel = document.getElementById('panel-passenger');
     const vehiclePanel = document.getElementById('panel-vehicle');
+    const b2bPanel = document.getElementById('panel-b2b');
     
     if (role === 'passenger') {
         passengerPanel.classList.add('active');
         vehiclePanel.classList.remove('active');
+        if (b2bPanel) b2bPanel.classList.remove('active');
         document.getElementById('btn-focus-train').classList.add('hidden');
         renderLineChips(); // Re-render chips para inyectar "Todas"
         selectMetroLine('ALL'); // Seleccionar Todas por defecto para el Pasajero
         resetPassengerView();
-    } else {
+    } else if (role === 'vehicle') {
         passengerPanel.classList.remove('active');
         vehiclePanel.classList.add('active');
+        if (b2bPanel) b2bPanel.classList.remove('active');
         document.getElementById('btn-focus-train').classList.add('hidden');
         renderLineChips(); // Re-render chips para quitar "Todas"
         
@@ -1168,6 +1198,27 @@ function setAppRole(role) {
         AppState.driverSelectedLine = driverLine;
         selectMetroLine(driverLine); // Si estaba en ALL, enfocar en L1
         updateDriverPanelUI();
+    } else if (role === 'b2b') {
+        passengerPanel.classList.remove('active');
+        vehiclePanel.classList.remove('active');
+        if (b2bPanel) b2bPanel.classList.add('active');
+        document.getElementById('btn-focus-train').classList.add('hidden');
+        renderLineChips(); // Re-render chips para B2B (con "Todas")
+        
+        // Seleccionar línea activa actual o ALL por defecto
+        selectMetroLine(AppState.selectedLine);
+        updateB2BAlternativeMetrics();
+        drawB2BHeatmap();
+    }
+    
+    // Limpiar mapa de calor si no es B2B
+    if (role !== 'b2b') {
+        AppState.heatmapVisible = false;
+        const toggleHeatmap = document.getElementById('toggle-heatmap');
+        if (toggleHeatmap) toggleHeatmap.checked = false;
+        if (AppState.heatmapLayerGroup) {
+            AppState.heatmapLayerGroup.clearLayers();
+        }
     }
     
     // Iniciar sincronización remota por Internet (MQTT) si la librería está disponible
@@ -1886,6 +1937,300 @@ setInterval(() => {
     }
 }, 3000);
 
+// ================= MÓDULO B2B & MARKETING FINANCIERO (OPCIÓN B) =================
+
+// Estaciones del Metro de la CDMX con alta afluencia para el mapa de calor B2B
+const HIGH_TRAFFIC_STATIONS = new Set([
+    "Pantitlán", "Tacubaya", "Chabacano", "Hidalgo", "Balderas", "Pino Suárez", 
+    "La Raza", "Indios Verdes", "El Rosario", "Instituto del Petróleo", "Consulado", 
+    "San Lázaro", "Zapata", "Mixcoac", "Ermita", "Centro Médico", "Tacuba", 
+    "Bellas Artes", "Guerrero", "Martín Carrera", "Jamaica", "Candelaria", 
+    "Salto del Agua", "Deportivo 18 de Marzo", "Tasqueña", "Cuatro Caminos", 
+    "Universidad", "Barranca del Muerto", "Ciudad Azteca", "Tláhuac", "Observatorio"
+]);
+
+// Perfilamiento Crediticio Alternativo por Línea (Commuting Analytics)
+const B2B_METRICS = {
+    "ALL": { stability: "73%", devices: "Gama Media-Baja", interest: "64%" },
+    "L1":  { stability: "78%", devices: "Gama Media",      interest: "62%" },
+    "L2":  { stability: "81%", devices: "Gama Media-Alta", interest: "55%" },
+    "L3":  { stability: "83%", devices: "Gama Media",      interest: "60%" },
+    "L4":  { stability: "68%", devices: "Gama Baja",        interest: "71%" },
+    "L5":  { stability: "74%", devices: "Gama Media-Baja", interest: "65%" },
+    "L6":  { stability: "70%", devices: "Gama Baja",        interest: "69%" },
+    "L7":  { stability: "85%", devices: "Gama Alta",        interest: "48%" },
+    "L8":  { stability: "76%", devices: "Gama Media-Baja", interest: "67%" },
+    "L9":  { stability: "79%", devices: "Gama Media",      interest: "61%" },
+    "LA":  { stability: "72%", devices: "Gama Baja",        interest: "74%" },
+    "LB":  { stability: "75%", devices: "Gama Baja",        interest: "72%" },
+    "L12": { stability: "82%", devices: "Gama Media-Alta", interest: "52%" }
+};
+
+// Factores de volumen relativo por línea para simulación de Leads
+const LINE_VOLUME_FACTORS = {
+    "ALL": 12.8,
+    "L1":  2.2,
+    "L2":  2.5,
+    "L3":  2.8,
+    "L4":  0.6,
+    "L5":  1.2,
+    "L6":  0.9,
+    "L7":  1.8,
+    "L8":  1.5,
+    "L9":  2.0,
+    "LA":  1.1,
+    "LB":  1.6,
+    "L12": 1.7
+};
+
+// Actualizar KPIs de Scoring Crediticio Alternativo en la interfaz
+function updateB2BAlternativeMetrics() {
+    const lineId = AppState.selectedLine;
+    const metrics = B2B_METRICS[lineId] || B2B_METRICS["ALL"];
+    
+    const stabilityEl = document.getElementById('metric-stability');
+    const devicesEl = document.getElementById('metric-devices');
+    const interestEl = document.getElementById('metric-interest');
+    
+    if (stabilityEl) stabilityEl.innerText = metrics.stability;
+    if (devicesEl) devicesEl.innerText = metrics.devices;
+    if (interestEl) interestEl.innerText = metrics.interest;
+}
+
+// Dibujar círculos concéntricos Leaflet para formar el mapa de calor de afluencia
+function drawB2BHeatmap() {
+    if (!AppState.heatmapLayerGroup) return;
+    
+    AppState.heatmapLayerGroup.clearLayers();
+    if (!AppState.heatmapVisible) return;
+    
+    const lineId = AppState.selectedLine;
+    
+    if (lineId === 'ALL') {
+        Object.keys(METRO_LINES).forEach(id => {
+            renderLineHeatmap(id);
+        });
+    } else {
+        renderLineHeatmap(lineId);
+    }
+}
+
+function renderLineHeatmap(lineId) {
+    const line = METRO_LINES[lineId];
+    if (!line) return;
+    
+    line.stations.forEach(station => {
+        const coords = station.coords;
+        const isHighTraffic = HIGH_TRAFFIC_STATIONS.has(station.name);
+        
+        if (isHighTraffic) {
+            // Estructura de calor concéntrica de 3 capas para hotspots
+            L.circle(coords, {
+                radius: 400,
+                color: '#ff4d4d',
+                fillColor: '#ff4d4d',
+                fillOpacity: 0.12,
+                stroke: false,
+                interactive: false
+            }).addTo(AppState.heatmapLayerGroup);
+            
+            L.circle(coords, {
+                radius: 200,
+                color: '#ff1a1a',
+                fillColor: '#ff1a1a',
+                fillOpacity: 0.28,
+                stroke: false,
+                interactive: false
+            }).addTo(AppState.heatmapLayerGroup);
+            
+            L.circle(coords, {
+                radius: 80,
+                color: '#cc0000',
+                fillColor: '#cc0000',
+                fillOpacity: 0.45,
+                stroke: false,
+                interactive: false
+            }).addTo(AppState.heatmapLayerGroup);
+        } else {
+            // Estructura de calor concéntrica de 2 capas para estaciones normales
+            L.circle(coords, {
+                radius: 220,
+                color: '#ffaa33',
+                fillColor: '#ffaa33',
+                fillOpacity: 0.08,
+                stroke: false,
+                interactive: false
+            }).addTo(AppState.heatmapLayerGroup);
+            
+            L.circle(coords, {
+                radius: 100,
+                color: '#ff8000',
+                fillColor: '#ff8000',
+                fillOpacity: 0.18,
+                stroke: false,
+                interactive: false
+            }).addTo(AppState.heatmapLayerGroup);
+        }
+    });
+}
+
+// Simulador interactivo de Leads pre-aprobados (Marketing Financiero B2B)
+function runB2BLeadSimulation() {
+    const btnSimulate = document.getElementById('btn-simulate-campaign');
+    const selectProduct = document.getElementById('select-b2b-product');
+    const progressContainer = document.getElementById('b2b-progress-container');
+    const progressBarFill = document.getElementById('b2b-progress-bar-fill');
+    const progressPercent = document.getElementById('b2b-progress-percent');
+    const progressTitle = progressContainer ? progressContainer.querySelector('.progress-title') : null;
+    const resultsCard = document.getElementById('b2b-results-card');
+    
+    if (!btnSimulate || !selectProduct) return;
+    
+    // Deshabilitar controles durante la simulación
+    btnSimulate.disabled = true;
+    selectProduct.disabled = true;
+    
+    // Ocultar resultados anteriores y mostrar barra de progreso
+    if (resultsCard) resultsCard.classList.add('hidden');
+    if (progressContainer) progressContainer.classList.remove('hidden');
+    
+    let progress = 0;
+    progressBarFill.style.width = '0%';
+    progressPercent.innerText = '0%';
+    
+    // Frases premium para la barra de carga (Duolingo style micro-moments)
+    const loadingTexts = [
+        "Extrayendo telemetría de movilidad agregada...",
+        "Calculando consistencia de commuting...",
+        "Aplicando scoring crediticio alternativo...",
+        "Proyectando tasas de conversión B2B..."
+    ];
+    
+    if (progressTitle) progressTitle.innerText = loadingTexts[0];
+    
+    // 📊 Telemetría: Inicio de Simulación
+    Telemetry.track('b2b_simulation_started', {
+        line: AppState.selectedLine,
+        product: selectProduct.value
+    });
+    
+    const intervalTime = 20; // 20ms * 100 steps = 2000ms (2s de simulación)
+    const timer = setInterval(() => {
+        progress += 1;
+        progressBarFill.style.width = `${progress}%`;
+        progressPercent.innerText = `${progress}%`;
+        
+        // Cambiar textos según el porcentaje de avance
+        if (progressTitle) {
+            if (progress === 25) progressTitle.innerText = loadingTexts[1];
+            if (progress === 50) progressTitle.innerText = loadingTexts[2];
+            if (progress === 75) progressTitle.innerText = loadingTexts[3];
+        }
+        
+        if (progress >= 100) {
+            clearInterval(timer);
+            
+            // Ocultar barra de progreso tras una breve pausa de 300ms y mostrar resultados
+            setTimeout(() => {
+                if (progressContainer) progressContainer.classList.add('hidden');
+                calculateSimulationResults();
+                
+                // Re-habilitar controles
+                btnSimulate.disabled = false;
+                selectProduct.disabled = false;
+            }, 300);
+        }
+    }, intervalTime);
+}
+
+// Realiza los cálculos y dispara la micro-animación de conteo numérico
+function calculateSimulationResults() {
+    const resultsCard = document.getElementById('b2b-results-card');
+    const selectProduct = document.getElementById('select-b2b-product').value;
+    const lineId = AppState.selectedLine;
+    
+    const resultsLineName = document.getElementById('results-line-name');
+    const resultLeadsEl = document.getElementById('result-leads');
+    const resultConversionEl = document.getElementById('result-conversion');
+    const resultCommissionEl = document.getElementById('result-commission');
+    
+    if (!resultsCard) return;
+    
+    // Mostrar tarjeta
+    resultsCard.classList.remove('hidden');
+    
+    // Título de línea
+    if (resultsLineName) {
+        resultsLineName.innerText = lineId === 'ALL' ? 'Todas las Líneas' : (METRO_LINES[lineId]?.name || lineId);
+    }
+    
+    // 1. Calcular Volumen Base de Leads
+    const volumeFactor = LINE_VOLUME_FACTORS[lineId] || LINE_VOLUME_FACTORS["ALL"];
+    let baseLeadsMultiplier = 1000;
+    let baseConversion = 6.5;
+    let commissionPerConversion = 35; // pesos MXN
+    
+    if (selectProduct === 'microcredit') {
+        baseLeadsMultiplier = 1200;
+        baseConversion = 7.8;
+        commissionPerConversion = 35;
+    } else if (selectProduct === 'salary_advance') {
+        baseLeadsMultiplier = 600;
+        baseConversion = 5.2;
+        commissionPerConversion = 120;
+    } else if (selectProduct === 'insurance') {
+        baseLeadsMultiplier = 1500;
+        baseConversion = 9.4;
+        commissionPerConversion = 45;
+    }
+    
+    // Variación aleatoria controlada (+/- 10%)
+    const randomFactor = 0.9 + Math.random() * 0.2;
+    const finalLeads = Math.round(volumeFactor * baseLeadsMultiplier * randomFactor);
+    const finalConversion = baseConversion + (Math.random() * 2 - 1); // +/- 1%
+    
+    // Comisión = Leads * (Conversion/100) * Comisión por Conversión
+    const conversions = finalLeads * (finalConversion / 100);
+    const finalCommission = conversions * commissionPerConversion;
+    
+    // 📊 Telemetría: Resultados de Simulación
+    Telemetry.track('b2b_simulation_completed', {
+        line: lineId,
+        product: selectProduct,
+        leads: finalLeads,
+        conversion: finalConversion,
+        commission: finalCommission
+    });
+    
+    // Disparar las micro-animaciones premium de incremento de números
+    if (resultLeadsEl) {
+        animateValue(resultLeadsEl, 0, finalLeads, 1200, (v) => Math.floor(v).toLocaleString('es-MX'));
+    }
+    if (resultConversionEl) {
+        animateValue(resultConversionEl, 0, finalConversion, 1200, (v) => v.toFixed(1) + '%');
+    }
+    if (resultCommissionEl) {
+        animateValue(resultCommissionEl, 0, finalCommission, 1200, (v) => '$' + Math.floor(v).toLocaleString('es-MX') + ' MXN');
+    }
+}
+
+// Helper para micro-animación premium: incremento progresivo de números
+function animateValue(element, start, end, duration, formatFn) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const currentVal = progress * (end - start) + start;
+        element.innerText = formatFn ? formatFn(currentVal) : Math.floor(currentVal);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            element.innerText = formatFn ? formatFn(end) : Math.floor(end);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
 // ================= INICIALIZACIÓN GENERAL =================
 window.addEventListener('DOMContentLoaded', () => {
     // 1. Renderizar chips superiores y selectores
@@ -1897,6 +2242,26 @@ window.addEventListener('DOMContentLoaded', () => {
     // 3. Vincular botones de rol
     document.getElementById('btn-role-passenger').addEventListener('click', () => setAppRole('passenger'));
     document.getElementById('btn-role-vehicle').addEventListener('click', () => setAppRole('vehicle'));
+    
+    const btnRoleB2b = document.getElementById('btn-role-b2b');
+    if (btnRoleB2b) {
+        btnRoleB2b.addEventListener('click', () => setAppRole('b2b'));
+    }
+    
+    // 3b. Vincular interactivos B2B
+    const toggleHeatmap = document.getElementById('toggle-heatmap');
+    if (toggleHeatmap) {
+        toggleHeatmap.addEventListener('change', (e) => {
+            AppState.heatmapVisible = e.target.checked;
+            drawB2BHeatmap();
+            Telemetry.track('b2b_heatmap_toggled', { enabled: AppState.heatmapVisible, line: AppState.selectedLine });
+        });
+    }
+    
+    const btnSimulateCampaign = document.getElementById('btn-simulate-campaign');
+    if (btnSimulateCampaign) {
+        btnSimulateCampaign.addEventListener('click', runB2BLeadSimulation);
+    }
 
     // 4. Inicializar módulo de telemetría (respeta consentimiento previo)
     Telemetry.init();
